@@ -1,4 +1,3 @@
-// FRONTEND FROZEN — BACKEND IS SOURCE OF TRUTH
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useUI } from '@/context/UIContext';
@@ -19,8 +18,8 @@ const FlowGuard: React.FC<FlowGuardProps> = ({ children, step }) => {
   useEffect(() => {
     if (!isInitialized) return;
 
-    // No user at all - redirect to login
-    if (!user || !user.token) {
+    // No user hydrated from /auth/me - redirect to login
+    if (!user) {
       navigate('/login', { state: { from: location }, replace: true });
       return;
     }
