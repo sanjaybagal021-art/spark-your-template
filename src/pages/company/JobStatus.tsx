@@ -1,4 +1,4 @@
-// FRONTEND FROZEN — BACKEND IS SOURCE OF TRUTH
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';

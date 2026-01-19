@@ -2,8 +2,7 @@
  * API Client - Production Configuration
  * 
  * JWT-ONLY AUTH MODEL:
- * - NO refresh token logic
- * - NO silent refresh
+ * - No silent renewal
  * - If /auth/me fails → session is invalid
  */
 

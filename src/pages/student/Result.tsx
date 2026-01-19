@@ -1,4 +1,4 @@
-// FRONTEND FROZEN — BACKEND IS SOURCE OF TRUTH
+
 /**
  * Student Result Page
  * 
@@ -155,7 +155,6 @@ const Result: React.FC = () => {
   /**
    * BACKEND-DRIVEN DATA FETCH
    * 
-   * FRONTEND FROZEN — BACKEND AUTHORITY REQUIRED
    * All match data comes from backend. Frontend never infers state.
    */
   useEffect(() => {

@@ -1,7 +1,5 @@
 /**
  * Student Skill Extraction Page
- * 
- * FRONTEND FROZEN — BACKEND INTEGRATION ONLY
  */
 
 import React, { useState, useEffect } from 'react';
@@ -28,7 +26,6 @@ const SkillExtraction: React.FC = () => {
   useEffect(() => {
     const loadSkills = async () => {
       try {
-        // FRONTEND FROZEN — resumeId 'current' tells backend to use active resume
         const extractedSkills = await extractSkillsFromResume('current');
         setSkills(extractedSkills);
       } catch (err) {

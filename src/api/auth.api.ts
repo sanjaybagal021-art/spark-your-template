@@ -22,7 +22,7 @@ import type { UserData } from '@/types/student';
 const AUTH_TOKEN_KEY = 'aura_access_token';
 
 // ============================================================================
-// TOKEN MANAGEMENT - JWT ONLY (NO REFRESH TOKEN)
+// TOKEN MANAGEMENT - JWT ONLY
 // ============================================================================
 
 export const getAccessToken = (): string | null => {
@@ -47,7 +47,7 @@ export const clearToken = (): void => {
  * CONTRACT:
  * - Stores JWT only
  * - Does NOT return user
- * - Caller MUST call getCurrentUser() after to hydrate state
+ * - Caller MUST call refreshUser() (UIContext) to hydrate state
  */
 export const login = async (email: string, password: string): Promise<void> => {
   try {
@@ -246,25 +246,15 @@ export const initiateGoogleOAuth = (): void => {
  * CONTRACT:
  * - Stores JWT from URL params
  * - Returns void
- * - Caller MUST call getCurrentUser() to hydrate state
+ * - Caller MUST call refreshUser() (UIContext) to hydrate state from /auth/me
  */
 export const handleOAuthCallback = async (token: string): Promise<void> => {
   if (!token) {
     toast.error('No authentication token received');
     throw new Error('OAuth callback missing token');
   }
-  
-  // Store JWT
+
+  // Store JWT only. Do NOT verify session here.
+  // /auth/me is the single source of truth and will be called by UIContext.
   setToken(token);
-  
-  // Verify session is valid by calling /auth/me
-  const user = await getCurrentUser();
-  if (!user) {
-    clearToken();
-    toast.error('Failed to verify authentication');
-    throw new Error('OAuth session verification failed');
-  }
-  
-  // Token is valid - do NOT return user
-  // Caller will hydrate via refreshUser()
 };

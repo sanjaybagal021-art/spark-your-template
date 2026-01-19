@@ -1,6 +1,4 @@
 /**
- * FRONTEND FROZEN — BACKEND IS SOURCE OF TRUTH
- * 
  * Offer API
  * 
  * Handles offer management with grace periods and controlled decisions.

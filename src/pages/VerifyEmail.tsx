@@ -1,4 +1,4 @@
-// FRONTEND FROZEN — BACKEND IS SOURCE OF TRUTH
+/**
 /**
  * Email OTP Verification Page
  * 
@@ -64,12 +64,7 @@ const VerifyEmail: React.FC = () => {
     
     try {
       await verifyEmailOtp(user.email, otp);
-      // After email verification, check if phone needs verification
-      if (!user.phoneVerified) {
-        navigate('/verify/phone');
-      } else {
-        navigate('/student/profile');
-      }
+      // Navigation is handled by the redirect effects after /auth/me rehydrates state.
     } catch (err) {
       setError('Invalid OTP. Please try again.');
       setOtp('');
@@ -166,10 +161,6 @@ const VerifyEmail: React.FC = () => {
             </button>
           </div>
         )}
-
-        <p className="text-xs text-center text-muted-foreground mt-6 p-3 rounded-lg bg-muted/50">
-          ⚠️ FRONTEND FROZEN — Backend integration pending.
-        </p>
 
         <Link to="/login" className="block text-center mt-6 text-sm text-muted-foreground hover:text-foreground transition-colors">
           ← Back to Login

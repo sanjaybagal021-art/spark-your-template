@@ -1,4 +1,4 @@
-// FRONTEND FROZEN — BACKEND IS SOURCE OF TRUTH
+/**
 /**
  * Phone OTP Verification Page
  * 
@@ -64,7 +64,7 @@ const VerifyPhone: React.FC = () => {
     
     try {
       await verifyPhoneOtp(user.phone, otp);
-      navigate('/student/profile');
+      // Navigation is handled by the redirect effect after /auth/me rehydrates state.
     } catch (err) {
       setError('Invalid OTP. Please try again.');
       setOtp('');
@@ -161,10 +161,6 @@ const VerifyPhone: React.FC = () => {
             </button>
           </div>
         )}
-
-        <p className="text-xs text-center text-muted-foreground mt-6 p-3 rounded-lg bg-muted/50">
-          ⚠️ FRONTEND FROZEN — Backend integration pending.
-        </p>
 
         <Link to="/login" className="block text-center mt-6 text-sm text-muted-foreground hover:text-foreground transition-colors">
           ← Back to Login

@@ -1,4 +1,3 @@
-// FRONTEND FROZEN — BACKEND IS SOURCE OF TRUTH
 // This component is deprecated - email/phone verification replaces DigiLocker/Google
 import React from 'react';
 import { useNavigate } from 'react-router-dom';

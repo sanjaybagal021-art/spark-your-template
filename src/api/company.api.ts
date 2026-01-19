@@ -1,115 +1,122 @@
-// FRONTEND FROZEN — BACKEND IS SOURCE OF TRUTH
-// Company API - All logic is backend-authoritative
-// Frontend ONLY collects data and sends to API
+/**
+ * Company API
+ *
+ * JWT-ONLY AUTH MODEL:
+ * - Stores ONE JWT in localStorage under 'aura_access_token'
+ * - Company state is hydrated ONLY via /company/auth/me
+ */
 
 import api from '@/utils/api';
+import { AuthTokenResponseSchema, CompanyUserSchema, MessageResponseSchema, OtpResponseSchema } from '@/schemas/api.schemas';
 import type { CompanyUser } from '@/types/company';
-
-const COMPANY_TOKEN_KEY = 'aura_company_token';
-
-// ============================================================================
-// TOKEN MANAGEMENT
-// ============================================================================
-
-export const getCompanyToken = (): string | null => {
-  return localStorage.getItem(COMPANY_TOKEN_KEY);
-};
-
-export const setCompanyToken = (token: string): void => {
-  localStorage.setItem(COMPANY_TOKEN_KEY, token);
-};
-
-export const clearCompanyToken = (): void => {
-  localStorage.removeItem(COMPANY_TOKEN_KEY);
-};
+import { clearToken, getAccessToken, setToken } from '@/api/auth.api';
 
 // ============================================================================
 // AUTH APIs - Backend-authoritative
 // ============================================================================
 
-/**
- * Register company with email and password
- */
 export const registerCompany = async (
   email: string,
   password: string,
   companyName: string
-): Promise<{ message: string }> => {
+): Promise<void> => {
   const response = await api.post('/company/auth/register', { email, password, companyName });
-  return response.data;
+
+  const parsed = MessageResponseSchema.safeParse(response.data);
+  if (!parsed.success) {
+    throw new Error('Schema validation failed: company register');
+  }
 };
 
 /**
  * Login company
+ *
+ * CONTRACT:
+ * - Stores JWT only
+ * - Does NOT return company
+ * - Caller MUST hydrate via /company/auth/me
  */
-export const loginCompany = async (
-  email: string,
-  password: string
-): Promise<{ company: CompanyUser; token: string }> => {
+export const loginCompany = async (email: string, password: string): Promise<void> => {
   const response = await api.post('/company/auth/login', { email, password });
-  const { company, token } = response.data;
-  setCompanyToken(token);
-  return response.data;
+
+  const parsed = AuthTokenResponseSchema.safeParse(response.data);
+  if (!parsed.success) {
+    throw new Error('Schema validation failed: company login');
+  }
+
+  setToken(parsed.data.access_token);
 };
 
 /**
  * Get current company session
+ *
+ * THIS IS THE ONLY SOURCE OF TRUTH FOR COMPANY STATE
  */
 export const getCurrentCompany = async (): Promise<CompanyUser | null> => {
-  const token = getCompanyToken();
+  const token = getAccessToken();
   if (!token) return null;
-  
+
   try {
     const response = await api.get('/company/auth/me');
-    return response.data;
-  } catch (error) {
-    clearCompanyToken();
+
+    const parsed = CompanyUserSchema.safeParse(response.data);
+    if (!parsed.success) {
+      throw new Error('Schema validation failed: company auth/me');
+    }
+
+    return parsed.data as CompanyUser;
+  } catch {
+    // 401 handled by axios interceptor; still clear local token for consistency
+    clearToken();
     return null;
   }
 };
 
-/**
- * Request email OTP for company verification
- */
-export const requestCompanyEmailOtp = async (email: string): Promise<{ message: string }> => {
+export const requestCompanyEmailOtp = async (email: string): Promise<void> => {
   const response = await api.post('/company/auth/otp/request', { email });
-  return response.data;
+
+  const parsed = OtpResponseSchema.safeParse(response.data);
+  if (!parsed.success) {
+    throw new Error('Schema validation failed: company email OTP request');
+  }
 };
 
-/**
- * Verify company email with OTP
- */
-export const verifyCompanyEmailOtp = async (email: string, otp: string): Promise<CompanyUser> => {
+export const verifyCompanyEmailOtp = async (email: string, otp: string): Promise<void> => {
   const response = await api.post('/company/auth/otp/verify', { email, otp });
-  return response.data;
+
+  const parsed = MessageResponseSchema.safeParse(response.data);
+  if (!parsed.success) {
+    throw new Error('Schema validation failed: company email OTP verify');
+  }
 };
 
-/**
- * Verify company with GST number
- * Backend validates GST - frontend just submits
- */
-export const verifyCompanyGst = async (gstNumber: string): Promise<CompanyUser> => {
+export const verifyCompanyGst = async (gstNumber: string): Promise<void> => {
   const response = await api.post('/company/verify/gst', { gstNumber });
-  return response.data;
+
+  const parsed = MessageResponseSchema.safeParse(response.data);
+  if (!parsed.success) {
+    throw new Error('Schema validation failed: company GST verify');
+  }
 };
 
-/**
- * Update company profile
- */
 export const updateCompanyProfile = async (data: Partial<CompanyUser>): Promise<CompanyUser> => {
   const response = await api.patch('/company/profile', data);
-  return response.data;
+
+  const parsed = CompanyUserSchema.safeParse(response.data);
+  if (!parsed.success) {
+    throw new Error('Schema validation failed: company profile update');
+  }
+
+  return parsed.data as CompanyUser;
 };
 
-/**
- * Logout company
- */
 export const logoutCompany = async (): Promise<void> => {
   try {
     await api.post('/company/auth/logout');
-  } catch (error) {
+  } catch {
     // Ignore logout errors
   } finally {
-    clearCompanyToken();
+    clearToken();
   }
 };
+

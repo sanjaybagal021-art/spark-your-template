@@ -55,7 +55,6 @@ export const AuthMeResponseSchema = z.object({
   status: z.string(),
   emailVerified: z.boolean(),
   phoneVerified: z.boolean(),
-  token: z.string().nullable().optional(),
   matchResult: z.object({
     companyId: z.string(),
     companyName: z.string(),
@@ -102,7 +101,6 @@ export const UserDataSchema = z.object({
   status: z.string(),
   emailVerified: z.boolean(),
   phoneVerified: z.boolean(),
-  token: z.string().nullable(),
   matchResult: z.object({
     companyId: z.string(),
     companyName: z.string(),
@@ -246,7 +244,6 @@ export const CompanyUserSchema = z.object({
   contactPerson: z.string().optional(),
   gstNumber: z.string().optional(),
   emailVerified: z.boolean(),
-  token: z.string().nullable(),
   status: z.enum(['profile-pending', 'active']),
   createdAt: z.string(),
 });

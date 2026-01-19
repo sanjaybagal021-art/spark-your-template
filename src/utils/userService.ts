@@ -1,4 +1,4 @@
-// FRONTEND FROZEN — BACKEND IS SOURCE OF TRUTH
+
 /**
  * User Service - Minimal utility functions
  * 

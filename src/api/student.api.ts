@@ -1,4 +1,3 @@
-// FRONTEND FROZEN — BACKEND IS SOURCE OF TRUTH
 // Student API - All logic is backend-authoritative
 // Frontend NEVER computes skills, scores, or AI output
 

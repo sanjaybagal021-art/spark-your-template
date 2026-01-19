@@ -1,6 +1,4 @@
 /**
- * FRONTEND FROZEN — BACKEND IS SOURCE OF TRUTH
- * 
  * Application API
  * 
  * Handles application lifecycle, withdrawal, and cooldowns.
