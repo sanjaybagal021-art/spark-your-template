@@ -1,4 +1,3 @@
-// FRONTEND FROZEN — BACKEND IS SOURCE OF TRUTH
 /**
  * CompanyFlowGuard - Protects company routes and enforces flow order.
  * 
