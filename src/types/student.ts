@@ -1,4 +1,3 @@
-// FRONTEND FROZEN — BACKEND IS SOURCE OF TRUTH
 // Single source of truth for all student-related types
 
 export type UserStatus = 
@@ -54,7 +53,6 @@ export interface UserData {
   emailVerified: boolean;
   /** Phone verified via OTP */
   phoneVerified: boolean;
-  token: string | null;
   matchResult: MatchResult | null;
   onboardingComplete: boolean;
   createdAt: string;

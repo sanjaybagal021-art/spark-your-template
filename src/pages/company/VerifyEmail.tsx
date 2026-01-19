@@ -1,4 +1,4 @@
-// FRONTEND FROZEN — BACKEND IS SOURCE OF TRUTH
+/**
 /**
  * Company Email OTP Verification Page
  * 
@@ -60,7 +60,7 @@ const CompanyVerifyEmail: React.FC = () => {
     
     try {
       await verifyEmailOtp(company.email, otp);
-      navigate('/company/profile');
+      // Navigation is handled by the redirect effect after /company/auth/me rehydrates state.
     } catch (err) {
       setError('Invalid OTP. Please try again.');
       setOtp('');
@@ -149,10 +149,6 @@ const CompanyVerifyEmail: React.FC = () => {
               </button>
             </div>
           )}
-
-          <p className="text-xs text-center text-muted-foreground mt-6 p-3 rounded-lg bg-muted/50">
-            ⚠️ FRONTEND FROZEN — Backend integration pending.
-          </p>
 
           <div className="mt-6 text-center">
             <Link

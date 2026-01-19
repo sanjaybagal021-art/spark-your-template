@@ -1,4 +1,4 @@
-// FRONTEND FROZEN — BACKEND IS SOURCE OF TRUTH
+
 /**
  * Student Match History Page
  * 
@@ -359,8 +359,6 @@ export default function History() {
 
   /**
    * BACKEND-DRIVEN DATA FETCH
-   * 
-   * FRONTEND FROZEN — BACKEND AUTHORITY REQUIRED
    */
   useEffect(() => {
     const fetchHistory = async () => {

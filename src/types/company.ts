@@ -1,4 +1,3 @@
-// FRONTEND FROZEN — BACKEND IS SOURCE OF TRUTH
 // Single source of truth for all company-related types
 
 export type CompanyStatus = 'profile-pending' | 'active';
@@ -15,7 +14,6 @@ export interface CompanyUser {
   gstNumber: string;
   /** Email verified via OTP */
   emailVerified: boolean;
-  token: string | null;
   status: CompanyStatus;
   createdAt: string;
 }

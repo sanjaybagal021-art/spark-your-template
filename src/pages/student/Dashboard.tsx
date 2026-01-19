@@ -1,4 +1,4 @@
-// FRONTEND FROZEN — BACKEND IS SOURCE OF TRUTH
+
 /**
  * Student Dashboard
  * 
@@ -136,8 +136,6 @@ export default function Dashboard() {
 
   /**
    * BACKEND-DRIVEN DATA FETCH
-   * 
-   * FRONTEND FROZEN — BACKEND AUTHORITY REQUIRED
    */
   useEffect(() => {
     const fetchDashboard = async () => {

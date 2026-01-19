@@ -1,4 +1,4 @@
-// FRONTEND FROZEN — BACKEND IS SOURCE OF TRUTH
+
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -324,11 +324,6 @@ const PolicySimulator: React.FC = () => {
           </AnimatedButton>
         </motion.div>
 
-        {/* Disclaimer */}
-        <p className="text-xs text-muted-foreground text-center mt-8 p-4 rounded-xl bg-muted/30">
-          ⚠️ This is a UI simulation for demonstration purposes. Changes will not
-          affect actual matching algorithms.
-        </p>
       </main>
     </div>
   );

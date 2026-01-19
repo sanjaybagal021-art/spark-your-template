@@ -1,4 +1,4 @@
-// FRONTEND FROZEN — BACKEND IS SOURCE OF TRUTH
+
 /**
  * Matching Engine API - Backend-ready stubs
  * 
@@ -29,7 +29,6 @@ import type {
 /**
  * RUN MATCHING - SYSTEM ACTION
  * 
- * FRONTEND FROZEN — BACKEND AUTHORITY REQUIRED
  * Backend computes all match proposals.
  */
 export const runMatching = async (jobId: string): Promise<MatchProposal[]> => {
@@ -39,8 +38,6 @@ export const runMatching = async (jobId: string): Promise<MatchProposal[]> => {
 
 /**
  * GET MATCHES FOR JOB - READ-ONLY
- * 
- * FRONTEND FROZEN — BACKEND AUTHORITY REQUIRED
  */
 export const getMatchesForJob = async (jobId: string): Promise<MatchProposal[]> => {
   const response = await api.get<MatchProposal[]>(`/company/jobs/${jobId}/matches`);
@@ -50,7 +47,6 @@ export const getMatchesForJob = async (jobId: string): Promise<MatchProposal[]> 
 /**
  * PERFORM MATCH ACTION - COMPANY INTENT
  * 
- * FRONTEND FROZEN — BACKEND AUTHORITY REQUIRED
  * Company can only approve/reject/hold. Cannot edit scores.
  */
 export const performMatchAction = async (matchId: string, action: MatchAction): Promise<MatchProposal> => {
@@ -60,8 +56,6 @@ export const performMatchAction = async (matchId: string, action: MatchAction): 
 
 /**
  * GET JOB MATCH SUMMARY - READ-ONLY
- * 
- * FRONTEND FROZEN — BACKEND AUTHORITY REQUIRED
  */
 export const getJobMatchSummary = async (jobId: string, intake: number): Promise<JobMatchSummary> => {
   const response = await api.get<JobMatchSummary>(`/company/jobs/${jobId}/summary`, {
@@ -72,8 +66,6 @@ export const getJobMatchSummary = async (jobId: string, intake: number): Promise
 
 /**
  * GET SINGLE MATCH - READ-ONLY
- * 
- * FRONTEND FROZEN — BACKEND AUTHORITY REQUIRED
  */
 export const getMatchById = async (matchId: string): Promise<MatchProposal | null> => {
   try {
