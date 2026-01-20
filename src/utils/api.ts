@@ -37,17 +37,26 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor - handle 401 (session invalid)
+// Response interceptor - handle 401 (session expired)
 api.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
     if (error.response?.status === 401) {
-      // Session is invalid - clear token and redirect
+      // Session is invalid - clear token
       localStorage.removeItem(AUTH_TOKEN_KEY);
       
-      // Only redirect if not already on login page
-      if (!window.location.pathname.includes('/login')) {
-        toast.error('Session expired. Please log in again.');
+      // Only show toast and redirect if not already on login/auth pages
+      const isAuthPage = window.location.pathname.includes('/login') || 
+                         window.location.pathname.includes('/auth/');
+      
+      if (!isAuthPage) {
+        // Session expiry notification
+        toast.error('Your session has expired', {
+          description: 'Please log in again to continue.',
+          duration: 5000,
+        });
+        
+        // Redirect to login
         window.location.href = '/login';
       }
     }
