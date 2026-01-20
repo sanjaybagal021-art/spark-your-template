@@ -43,9 +43,6 @@ import CreateJob from "./pages/company/CreateJob";
 import JobStatus from "./pages/company/JobStatus";
 import JobMatches from "./pages/company/JobMatches";
 
-// Dev Pages (conditionally imported)
-import AuthHealth from "./pages/dev/AuthHealth";
-
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -76,9 +73,6 @@ const App = () => (
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/chat" element={<Chat />} />
               <Route path="/policy" element={<PolicySimulator />} />
-              
-              {/* Dev Routes (blocked in production via component) */}
-              <Route path="/dev/auth-health" element={<AuthHealth />} />
               
               {/* Protected Student Routes with Flow Enforcement */}
               <Route path="/student/dashboard" element={
