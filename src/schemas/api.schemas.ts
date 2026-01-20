@@ -21,16 +21,6 @@ export const AuthTokenResponseSchema = z.object({
 
 export const AuthLoginResponseSchema = z.object({
   success: z.boolean(),
-  user: z.object({
-    id: z.string(),
-    email: z.string(),
-    name: z.string(),
-    role: z.enum(['student', 'company']),
-    emailVerified: z.boolean(),
-    phoneVerified: z.boolean(),
-    status: z.string(),
-    createdAt: z.string(),
-  }),
   access_token: z.string(),
 });
 

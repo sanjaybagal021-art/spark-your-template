@@ -1,17 +1,14 @@
 /**
- * FRONTEND FROZEN — BACKEND IS SOURCE OF TRUTH
- * 
  * Company Jobs API
  * 
  * Handles job creation and management for companies.
- * All state is backend-authoritative. Frontend only sends intent and renders outcome.
  * 
- * BACKEND CONTRACT:
- * - POST /api/company/jobs             → CompanyJob (create)
+ * Endpoints:
+ * - POST /api/company/jobs             → CompanyJob
  * - GET  /api/company/jobs             → CompanyJob[]
  * - GET  /api/company/jobs/:id         → CompanyJob
  * - POST /api/company/jobs/:id/process → { success: boolean }
- * - DELETE /api/company/jobs/:id       → void (if allowed)
+ * - DELETE /api/company/jobs/:id       → void
  */
 
 import api from '@/utils/api';

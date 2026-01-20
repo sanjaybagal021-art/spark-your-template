@@ -1,12 +1,7 @@
-// FRONTEND FROZEN — BACKEND IS SOURCE OF TRUTH
 /**
  * Create Job Page
  * 
- * BACKEND AUTHORITY MODEL:
- * - Company submits raw JD text
- * - Backend performs AI/NLP extraction
- * - Frontend displays backend-provided suggestions
- * - NO frontend AI, regex, or heuristics
+ * Company submits job description, backend extracts fields via AI/NLP.
  */
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -77,11 +72,7 @@ const CreateJob: React.FC = () => {
   const [error, setError] = useState('');
 
   /**
-   * BACKEND-DRIVEN JD ANALYSIS
-   * 
-   * FRONTEND FROZEN — BACKEND AUTHORITY REQUIRED
-   * Frontend sends raw JD text, backend returns extracted fields.
-   * NO frontend regex, keyword matching, or heuristics.
+   * Sends JD to backend for AI-powered field extraction.
    */
   const handleAnalyzeJD = async () => {
     if (jobDescription.length < 100) {

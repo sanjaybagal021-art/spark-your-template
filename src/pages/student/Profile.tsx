@@ -1,9 +1,7 @@
-// FRONTEND FROZEN — BACKEND IS SOURCE OF TRUTH
 /**
  * Student Profile Page
  * 
  * Displays and edits student profile information.
- * All data is backend-authoritative.
  */
 
 import React, { useState } from 'react';
