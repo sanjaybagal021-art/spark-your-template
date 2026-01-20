@@ -54,6 +54,84 @@ The backend:
 
 ---
 
+## Google OAuth Flow
+
+The frontend acts as a **thin client** for OAuth - it never handles Google tokens directly.
+
+### Flow Diagram
+
+```
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│   Frontend   │     │   Backend    │     │    Google    │
+└──────┬───────┘     └──────┬───────┘     └──────┬───────┘
+       │                    │                    │
+       │ 1. Redirect to     │                    │
+       │    /auth/google    │                    │
+       │───────────────────>│                    │
+       │                    │                    │
+       │                    │ 2. Redirect to     │
+       │                    │    Google consent  │
+       │                    │───────────────────>│
+       │                    │                    │
+       │                    │ 3. User consents   │
+       │                    │<───────────────────│
+       │                    │                    │
+       │                    │ 4. Exchange code   │
+       │                    │    for tokens      │
+       │                    │───────────────────>│
+       │                    │                    │
+       │                    │ 5. Google tokens   │
+       │                    │<───────────────────│
+       │                    │                    │
+       │ 6. Redirect with   │                    │
+       │    Aura JWT        │                    │
+       │<───────────────────│                    │
+       │                    │                    │
+       │ 7. Store JWT,      │                    │
+       │    call /auth/me   │                    │
+       │───────────────────>│                    │
+       │                    │                    │
+       │ 8. User state      │                    │
+       │<───────────────────│                    │
+       │                    │                    │
+```
+
+### Step-by-Step
+
+1. **Initiation**: Frontend calls `initiateGoogleOAuth()` which redirects to:
+   ```
+   ${VITE_API_URL}/auth/google?redirect_uri=${encodeURIComponent(callbackUrl)}
+   ```
+
+2. **Backend Redirect**: Backend redirects user to Google consent screen using its stored `client_id` and `client_secret`
+
+3. **User Consent**: User grants permission on Google's OAuth consent screen
+
+4. **Code Exchange**: Backend receives authorization code from Google
+
+5. **Token Exchange**: Backend exchanges code for Google access/refresh tokens (kept server-side)
+
+6. **JWT Issuance**: Backend creates/updates user, generates Aura JWT, redirects to:
+   ```
+   ${frontend_callback}?token=${aura_jwt}
+   ```
+
+7. **Token Storage**: Frontend extracts JWT from URL, stores in `localStorage`
+
+8. **State Hydration**: Frontend calls `/auth/me` to get authoritative user state
+
+### Security Boundaries
+
+| Component | Allowed | Prohibited |
+|-----------|---------|------------|
+| Frontend | Store Aura JWT | Store Google tokens |
+| Frontend | Redirect to backend OAuth URL | Direct Google API calls |
+| Frontend | Read JWT from callback URL | Exchange authorization codes |
+| Backend | Store Google client_secret | Expose client_secret to frontend |
+| Backend | Issue Aura JWT | Return Google tokens to frontend |
+
+---
+
 ## System Architecture
 
 ```
@@ -187,3 +265,4 @@ src/
 - Make decisions about data validity
 - Retry failed auth requests
 - Talk to third-party OAuth providers directly
+- Store Google client_secret or credentials
