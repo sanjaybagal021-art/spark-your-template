@@ -1,20 +1,14 @@
-// FRONTEND FROZEN — BACKEND IS SOURCE OF TRUTH
 /**
- * Match API - Backend-ready stubs
+ * Match API
  * 
- * OWNERSHIP: SYSTEM
- * Frontend only displays backend-provided match data.
- * NO localStorage. NO local computation.
+ * Backend-authoritative match operations.
  */
 
 import api from '@/utils/api';
 import type { MatchResult } from '@/types/student';
 
 /**
- * Run match simulation - SYSTEM ACTION
- * 
- * FRONTEND FROZEN — BACKEND AUTHORITY REQUIRED
- * Backend computes all matches. Frontend only triggers and displays.
+ * Triggers match computation for the current student.
  */
 export const runMatchSimulation = async (): Promise<MatchResult> => {
   const response = await api.post<MatchResult>('/student/match/run');
@@ -22,9 +16,7 @@ export const runMatchSimulation = async (): Promise<MatchResult> => {
 };
 
 /**
- * Get current match status
- * 
- * FRONTEND FROZEN — BACKEND AUTHORITY REQUIRED
+ * Gets current match status for the authenticated student.
  */
 export const getMatchStatus = async (): Promise<MatchResult | null> => {
   const response = await api.get<MatchResult | null>('/student/match/status');
@@ -32,9 +24,7 @@ export const getMatchStatus = async (): Promise<MatchResult | null> => {
 };
 
 /**
- * Accept match offer
- * 
- * FRONTEND FROZEN — BACKEND AUTHORITY REQUIRED
+ * Accepts the current match offer.
  */
 export const acceptMatch = async (): Promise<boolean> => {
   const response = await api.post<{ success: boolean }>('/student/match/accept');
@@ -42,9 +32,7 @@ export const acceptMatch = async (): Promise<boolean> => {
 };
 
 /**
- * Decline match offer
- * 
- * FRONTEND FROZEN — BACKEND AUTHORITY REQUIRED
+ * Declines the current match offer.
  */
 export const declineMatch = async (): Promise<boolean> => {
   const response = await api.post<{ success: boolean }>('/student/match/decline');

@@ -1,12 +1,9 @@
 /**
- * FRONTEND FROZEN — BACKEND IS SOURCE OF TRUTH
- * 
  * Review API
  * 
  * Handles flag/review requests for match explainability.
- * All state is backend-authoritative. Frontend only sends intent and renders outcome.
  * 
- * BACKEND CONTRACT:
+ * Endpoints:
  * - GET  /api/reviews                    → ReviewRequest[]
  * - GET  /api/reviews/match/:matchId     → ReviewRequest | null
  * - GET  /api/reviews/can-request/:matchId → { canRequest: boolean }

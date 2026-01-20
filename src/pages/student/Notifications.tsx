@@ -1,14 +1,8 @@
-// FRONTEND FROZEN — BACKEND IS SOURCE OF TRUTH
 /**
  * Student Notifications Page
  * 
- * BACKEND AUTHORITY MODEL:
- * - All notifications come from backend
- * - Frontend only renders and marks as read
- * - NO mock data or local state
- * 
- * OWNERSHIP: SYSTEM & COMPANY
- * STUDENT ACCESS: READ-ONLY
+ * Displays system and company notifications.
+ * All notifications are backend-sourced and read-only.
  */
 
 import { useState, useEffect } from 'react';
@@ -173,9 +167,7 @@ export default function Notifications() {
   const hasNotifications = notifications.length > 0;
 
   /**
-   * BACKEND-DRIVEN DATA FETCH
-   * 
-   * FRONTEND FROZEN — BACKEND AUTHORITY REQUIRED
+   * Fetches notifications from backend on mount.
    */
   useEffect(() => {
     const fetchNotifications = async () => {
@@ -193,9 +185,7 @@ export default function Notifications() {
   }, []);
 
   /**
-   * BACKEND-DRIVEN MARK ALL READ
-   * 
-   * FRONTEND FROZEN — BACKEND AUTHORITY REQUIRED
+   * Marks all notifications as read via backend.
    */
   const handleMarkAllRead = async () => {
     setIsMarkingRead(true);

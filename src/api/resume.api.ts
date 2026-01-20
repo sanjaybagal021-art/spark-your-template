@@ -1,14 +1,11 @@
 /**
- * FRONTEND FROZEN — BACKEND IS SOURCE OF TRUTH
- * 
  * Resume API
  * 
  * Handles resume versioning and skill extraction.
- * All state is backend-authoritative. Frontend only sends intent and renders outcome.
  * 
- * BACKEND CONTRACT:
+ * Endpoints:
  * - GET  /api/resumes/history        → ResumeHistory
- * - POST /api/resumes/upload         → ResumeVersion (multipart/form-data)
+ * - POST /api/resumes/upload         → ResumeVersion
  * - POST /api/resumes/:id/extract    → { skills: string[] }
  * - POST /api/resumes/:id/confirm    → ResumeVersion
  * - GET  /api/matches/:matchId/resume-version → { version: number; uploadedAt: string }
