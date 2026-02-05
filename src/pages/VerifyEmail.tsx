@@ -5,7 +5,7 @@
  * All verification logic is backend-authoritative.
  */
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Mail, ArrowRight, RefreshCw } from 'lucide-react';
 import AnimatedButton from '@/components/AnimatedButton';
@@ -17,43 +17,48 @@ import LoadingSkeleton from '@/components/LoadingSkeleton';
 
 const VerifyEmail: React.FC = () => {
   const navigate = useNavigate();
-  const { user, requestEmailOtp, verifyEmailOtp, isFullyVerified, isInitialized } = useUI();
+  const [searchParams] = useSearchParams();
+  const { user, requestEmailOtp, verifyEmailOtp, refreshUser, isFullyVerified, isInitialized } = useUI();
   const [otp, setOtp] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState('');
   const [otpSent, setOtpSent] = useState(false);
 
+  // Get email/phone from URL params (registration flow) or user state (existing user)
+  const email = searchParams.get('email') || user?.email || '';
+  const phone = searchParams.get('phone') || user?.phone || '';
+
   // Redirect logic - only after initialization
   useEffect(() => {
     if (!isInitialized) return;
     
-    // Not logged in - go to login
-    if (!user) {
+    // No email available - go to login
+    if (!email) {
       navigate('/login', { replace: true });
       return;
     }
     
-    // Already fully verified - go to profile
-    if (isFullyVerified) {
+    // Already fully verified (user loaded) - go to profile
+    if (user && isFullyVerified) {
       navigate('/student/profile', { replace: true });
       return;
     }
     
-    // Email verified but phone not - go to phone verify
-    if (user.emailVerified && !user.phoneVerified) {
-      navigate('/verify/phone', { replace: true });
+    // Email verified but phone not (user loaded) - go to phone verify
+    if (user?.emailVerified && !user?.phoneVerified) {
+      navigate(phone ? `/verify/phone?phone=${encodeURIComponent(phone)}` : '/verify/phone', { replace: true });
     }
-  }, [isInitialized, user, isFullyVerified, navigate]);
+  }, [isInitialized, user, email, phone, isFullyVerified, navigate]);
 
   const handleSendOtp = async () => {
-    if (!user?.email) return;
+    if (!email) return;
     
     setIsSending(true);
     setError('');
     
     try {
-      await requestEmailOtp(user.email);
+      await requestEmailOtp(email);
       setOtpSent(true);
     } catch (err) {
       setError('Failed to send OTP. Please try again.');
@@ -63,14 +68,17 @@ const VerifyEmail: React.FC = () => {
   };
 
   const handleVerify = async () => {
-    if (otp.length !== 6 || !user?.email) return;
+    if (otp.length !== 6 || !email) return;
     
     setIsLoading(true);
     setError('');
     
     try {
-      await verifyEmailOtp(user.email, otp);
-      // Navigation is handled by the redirect effects after /auth/me rehydrates state.
+      await verifyEmailOtp(email, otp);
+      // Hydrate user state now that email is verified
+      await refreshUser();
+      // Navigate to phone verification
+      navigate(phone ? `/verify/phone?phone=${encodeURIComponent(phone)}` : '/verify/phone');
     } catch (err) {
       setError('Invalid OTP. Please try again.');
       setOtp('');
@@ -79,8 +87,8 @@ const VerifyEmail: React.FC = () => {
     }
   };
 
-  // Show loading while initializing or if no user yet
-  if (!isInitialized || !user) {
+  // Show loading while initializing
+  if (!isInitialized) {
     return (
       <div className="min-h-screen flex items-center justify-center p-6">
         <LoadingSkeleton lines={4} />
@@ -114,8 +122,8 @@ const VerifyEmail: React.FC = () => {
         <h1 className="text-2xl font-bold text-center mb-2">Verify Your Email</h1>
         <p className="text-muted-foreground text-center mb-6">
           {otpSent 
-            ? `We've sent a 6-digit code to ${user.email}`
-            : `We'll send a verification code to ${user.email}`
+            ? `We've sent a 6-digit code to ${email}`
+            : `We'll send a verification code to ${email}`
           }
         </p>
 

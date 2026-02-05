@@ -5,7 +5,7 @@
  * All verification logic is backend-authoritative.
  */
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Phone, ArrowRight, RefreshCw } from 'lucide-react';
 import AnimatedButton from '@/components/AnimatedButton';
@@ -17,43 +17,47 @@ import LoadingSkeleton from '@/components/LoadingSkeleton';
 
 const VerifyPhone: React.FC = () => {
   const navigate = useNavigate();
-  const { user, requestPhoneOtp, verifyPhoneOtp, isFullyVerified, isInitialized } = useUI();
+  const [searchParams] = useSearchParams();
+  const { user, requestPhoneOtp, verifyPhoneOtp, refreshUser, isFullyVerified, isInitialized } = useUI();
   const [otp, setOtp] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState('');
   const [otpSent, setOtpSent] = useState(false);
 
+  // Get phone from URL params (registration flow) or user state (existing user)
+  const phone = searchParams.get('phone') || user?.phone || '';
+
   // Redirect logic - only after initialization
   useEffect(() => {
     if (!isInitialized) return;
     
-    // Not logged in - go to login
-    if (!user) {
+    // No phone available - go to login
+    if (!phone) {
       navigate('/login', { replace: true });
       return;
     }
     
-    // Email not verified - go to email verify first
-    if (!user.emailVerified) {
+    // Email not verified (user loaded) - go to email verify first
+    if (user && !user.emailVerified) {
       navigate('/verify/email', { replace: true });
       return;
     }
     
-    // Already fully verified - go to profile
-    if (isFullyVerified) {
+    // Already fully verified (user loaded) - go to profile
+    if (user && isFullyVerified) {
       navigate('/student/profile', { replace: true });
     }
-  }, [isInitialized, user, isFullyVerified, navigate]);
+  }, [isInitialized, user, phone, isFullyVerified, navigate]);
 
   const handleSendOtp = async () => {
-    if (!user?.phone) return;
+    if (!phone) return;
     
     setIsSending(true);
     setError('');
     
     try {
-      await requestPhoneOtp(user.phone);
+      await requestPhoneOtp(phone);
       setOtpSent(true);
     } catch (err) {
       setError('Failed to send OTP. Please try again.');
@@ -63,14 +67,17 @@ const VerifyPhone: React.FC = () => {
   };
 
   const handleVerify = async () => {
-    if (otp.length !== 6 || !user?.phone) return;
+    if (otp.length !== 6 || !phone) return;
     
     setIsLoading(true);
     setError('');
     
     try {
-      await verifyPhoneOtp(user.phone, otp);
-      // Navigation is handled by the redirect effect after /auth/me rehydrates state.
+      await verifyPhoneOtp(phone, otp);
+      // Hydrate user state now that phone is verified
+      await refreshUser();
+      // Navigate to profile
+      navigate('/student/profile');
     } catch (err) {
       setError('Invalid OTP. Please try again.');
       setOtp('');
@@ -79,8 +86,8 @@ const VerifyPhone: React.FC = () => {
     }
   };
 
-  // Show loading while initializing or if no user yet
-  if (!isInitialized || !user) {
+  // Show loading while initializing
+  if (!isInitialized) {
     return (
       <div className="min-h-screen flex items-center justify-center p-6">
         <LoadingSkeleton lines={4} />
@@ -114,8 +121,8 @@ const VerifyPhone: React.FC = () => {
         <h1 className="text-2xl font-bold text-center mb-2">Verify Your Phone</h1>
         <p className="text-muted-foreground text-center mb-6">
           {otpSent 
-            ? `We've sent a 6-digit code to ${user.phone}`
-            : `We'll send a verification code to ${user.phone}`
+            ? `We've sent a 6-digit code to ${phone}`
+            : `We'll send a verification code to ${phone}`
           }
         </p>
 
