@@ -13,10 +13,11 @@ import AIAvatar from '@/components/AIAvatar';
 import AuraGuidance from '@/components/AuraGuidance';
 import { useUI } from '@/context/UIContext';
 import { Button } from '@/components/ui/button';
+import LoadingSkeleton from '@/components/LoadingSkeleton';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
-  const { login, loginWithGoogle, register, isFullyVerified, isAuthenticated } = useUI();
+  const { login, loginWithGoogle, register, isFullyVerified, isAuthenticated, isInitialized } = useUI();
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -26,6 +27,8 @@ const Login: React.FC = () => {
 
   // Redirect if already authenticated
   useEffect(() => {
+    if (!isInitialized) return;
+    
     if (isAuthenticated) {
       if (isFullyVerified) {
         navigate('/student/profile', { replace: true });
@@ -33,7 +36,7 @@ const Login: React.FC = () => {
         navigate('/verify/email', { replace: true });
       }
     }
-  }, [isAuthenticated, isFullyVerified, navigate]);
+  }, [isInitialized, isAuthenticated, isFullyVerified, navigate]);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -83,6 +86,15 @@ const Login: React.FC = () => {
     }
     return "Sign in to continue your journey with Aura-Match.";
   };
+
+  // Show loading while checking auth state
+  if (!isInitialized) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <LoadingSkeleton lines={4} />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden">

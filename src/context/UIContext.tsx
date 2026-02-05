@@ -131,7 +131,8 @@ export const UIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     setState(prev => ({ ...prev, isLoading: true }));
     try {
       await authApi.register(email, password, phone);
-      // Do NOT refresh - redirect to verification
+      // Hydrate user state so verify pages can access user data
+      await refreshUser();
     } finally {
       setState(prev => ({ ...prev, isLoading: false }));
     }
