@@ -1,5 +1,4 @@
 /**
-/**
  * Email OTP Verification Page
  * 
  * Sends OTP to user's email and verifies it.
@@ -14,31 +13,38 @@ import AIAvatar from '@/components/AIAvatar';
 import AuraGuidance from '@/components/AuraGuidance';
 import { useUI } from '@/context/UIContext';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
+import LoadingSkeleton from '@/components/LoadingSkeleton';
 
 const VerifyEmail: React.FC = () => {
   const navigate = useNavigate();
-  const { user, requestEmailOtp, verifyEmailOtp, isFullyVerified } = useUI();
+  const { user, requestEmailOtp, verifyEmailOtp, isFullyVerified, isInitialized } = useUI();
   const [otp, setOtp] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState('');
   const [otpSent, setOtpSent] = useState(false);
 
-  // Redirect if already fully verified
+  // Redirect logic - only after initialization
   useEffect(() => {
-    if (isFullyVerified) {
-      navigate('/student/profile', { replace: true });
-    } else if (user?.emailVerified && !user?.phoneVerified) {
-      navigate('/verify/phone', { replace: true });
-    }
-  }, [isFullyVerified, user, navigate]);
-
-  // Redirect if not logged in
-  useEffect(() => {
+    if (!isInitialized) return;
+    
+    // Not logged in - go to login
     if (!user) {
       navigate('/login', { replace: true });
+      return;
     }
-  }, [user, navigate]);
+    
+    // Already fully verified - go to profile
+    if (isFullyVerified) {
+      navigate('/student/profile', { replace: true });
+      return;
+    }
+    
+    // Email verified but phone not - go to phone verify
+    if (user.emailVerified && !user.phoneVerified) {
+      navigate('/verify/phone', { replace: true });
+    }
+  }, [isInitialized, user, isFullyVerified, navigate]);
 
   const handleSendOtp = async () => {
     if (!user?.email) return;
@@ -73,7 +79,14 @@ const VerifyEmail: React.FC = () => {
     }
   };
 
-  if (!user) return null;
+  // Show loading while initializing or if no user yet
+  if (!isInitialized || !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <LoadingSkeleton lines={4} />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden">
