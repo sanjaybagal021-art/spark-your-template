@@ -33,7 +33,7 @@ interface UIContextType extends UIState {
   // Auth actions - ALL return void, NEVER user
   login: (email: string, password: string) => Promise<void>;
   loginWithGoogle: () => void;
-  register: (email: string, password: string, phone: string) => Promise<void>;
+  register: (email: string, password: string, phone: string) => Promise<{ email: string; phone: string }>;
   requestEmailOtp: (email: string) => Promise<void>;
   verifyEmailOtp: (email: string, otp: string) => Promise<void>;
   requestPhoneOtp: (phone: string) => Promise<void>;
@@ -127,12 +127,13 @@ export const UIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   /**
    * Register - stores JWT, does NOT hydrate (redirect to verify)
    */
-  const register = async (email: string, password: string, phone: string): Promise<void> => {
+  const register = async (email: string, password: string, phone: string): Promise<{ email: string; phone: string }> => {
     setState(prev => ({ ...prev, isLoading: true }));
     try {
       await authApi.register(email, password, phone);
-      // Hydrate user state so verify pages can access user data
-      await refreshUser();
+      // Do NOT call refreshUser() - user isn't verified yet
+      // Return email/phone so caller can pass to verification pages
+      return { email, phone };
     } finally {
       setState(prev => ({ ...prev, isLoading: false }));
     }

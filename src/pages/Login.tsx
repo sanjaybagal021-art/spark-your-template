@@ -67,8 +67,9 @@ const Login: React.FC = () => {
     setError('');
     
     try {
-      await register(email, password, phone);
-      navigate('/verify/email');
+      const { email: regEmail, phone: regPhone } = await register(email, password, phone);
+      // Pass email and phone via URL params for verification pages
+      navigate(`/verify/email?email=${encodeURIComponent(regEmail)}&phone=${encodeURIComponent(regPhone)}`);
     } catch {
       setError('Registration failed. Please try again.');
     } finally {
