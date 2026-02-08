@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Briefcase, MapPin, Users, Clock, Plus, Loader2, Eye, CheckCircle2 } from 'lucide-react';
+import { Briefcase, MapPin, Users, Clock, Plus, Loader2, Eye, CheckCircle2, FileText, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -178,16 +178,41 @@ const JobStatus: React.FC = () => {
                       </div>
                     )}
 
-                    {/* View Matches Button */}
-                    {(job.status === 'matched' || job.status === 'closed') && (
+                    {/* Navigation Buttons */}
+                    <div className="flex flex-col gap-2 mt-4">
+                      {/* View Details - Always available */}
                       <Button
-                        className="w-full mt-4"
-                        onClick={() => navigate(`/company/jobs/matches/${job.id}`)}
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => navigate(`/company/jobs/${job.id}`)}
                       >
-                        <Eye className="w-4 h-4 mr-2" />
-                        View Matched Candidates
+                        <FileText className="w-4 h-4 mr-2" />
+                        View Job Details
                       </Button>
-                    )}
+
+                      {/* View Matches - Only for matched/closed */}
+                      {(job.status === 'matched' || job.status === 'closed') && (
+                        <Button
+                          className="w-full"
+                          onClick={() => navigate(`/company/jobs/matches/${job.id}`)}
+                        >
+                          <Eye className="w-4 h-4 mr-2" />
+                          View Matched Candidates
+                        </Button>
+                      )}
+
+                      {/* View Summary - Only for matched/closed */}
+                      {(job.status === 'matched' || job.status === 'closed') && (
+                        <Button
+                          variant="secondary"
+                          className="w-full"
+                          onClick={() => navigate(`/company/jobs/${job.id}/summary`)}
+                        >
+                          <BarChart3 className="w-4 h-4 mr-2" />
+                          Allocator Summary
+                        </Button>
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
               </motion.div>
