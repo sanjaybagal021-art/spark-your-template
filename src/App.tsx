@@ -42,6 +42,8 @@ import CompanyProfile from "./pages/company/Profile";
 import CreateJob from "./pages/company/CreateJob";
 import JobStatus from "./pages/company/JobStatus";
 import JobMatches from "./pages/company/JobMatches";
+import JobDetail from "./pages/company/JobDetail";
+import JobSummary from "./pages/company/JobSummary";
 
 import NotFound from "./pages/NotFound";
 
@@ -146,6 +148,16 @@ const App = () => (
               <Route path="/company/jobs/matches/:jobId" element={
                 <CompanyFlowGuard step="job-matches">
                   <JobMatches />
+                </CompanyFlowGuard>
+              } />
+              <Route path="/company/jobs/:jobId" element={
+                <CompanyFlowGuard step="job-status">
+                  <JobDetail />
+                </CompanyFlowGuard>
+              } />
+              <Route path="/company/jobs/:jobId/summary" element={
+                <CompanyFlowGuard step="job-status">
+                  <JobSummary />
                 </CompanyFlowGuard>
               } />
               

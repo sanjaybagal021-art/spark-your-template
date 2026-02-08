@@ -276,6 +276,26 @@ export const CompanyMatchesResponseSchema = z.object({
 });
 
 // ============================================================================
+// JOB SUMMARY SCHEMA
+// ============================================================================
+
+/**
+ * JobSummaryResponseSchema - Allocator outcome at job level
+ * 
+ * RULES:
+ * - All counts come from backend
+ * - intakeFilled is NEVER computed locally
+ * - Frontend only renders these values
+ */
+export const JobSummaryResponseSchema = z.object({
+  totalMatches: z.number(),
+  approvedCount: z.number(),
+  pendingCount: z.number(),
+  rejectedCount: z.number(),
+  intakeFilled: z.number(),
+});
+
+// ============================================================================
 // TYPE EXPORTS
 // ============================================================================
 
@@ -287,3 +307,4 @@ export type OfferType = z.infer<typeof OfferSchema>;
 export type ReviewRequestType = z.infer<typeof ReviewRequestSchema>;
 export type CompanyUserType = z.infer<typeof CompanyUserSchema>;
 export type CompanyJobType = z.infer<typeof CompanyJobSchema>;
+export type JobSummaryResponse = z.infer<typeof JobSummaryResponseSchema>;
