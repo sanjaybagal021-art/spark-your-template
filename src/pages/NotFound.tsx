@@ -1,4 +1,3 @@
-// FRONTEND FROZEN — BACKEND IS SOURCE OF TRUTH
 import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
 

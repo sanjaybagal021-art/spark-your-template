@@ -1,168 +1,428 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800;900&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@300;400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* ═══════════════════════════════════════════════════════
+   LIVEBET — Design System
+   Fast. Data-rich. Trading-terminal energy.
+   ═══════════════════════════════════════════════════════ */
 
 @layer base {
   :root {
-    --background: 240 30% 97%;
-    --foreground: 240 10% 20%;
+    /* ── Core Surfaces ── */
+    --background: 0 0% 7%;            /* #121212 dark slate */
+    --surface: 220 74% 8%;            /* deep navy surface */
+    --surface-card: 220 50% 12%;      /* card background */
+    --surface-raised: 220 40% 16%;    /* raised element */
 
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 20%;
+    /* ── Brand ── */
+    --navy: 220 74% 15%;              /* #0A1F44 */
+    --blue: 210 77% 51%;              /* #1E88E5 electric blue */
+    --yellow: 50 100% 50%;            /* #FFD400 odds highlight */
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 20%;
+    /* ── Semantic ── */
+    --success: 145 63% 49%;           /* #2ECC71 */
+    --loss: 6 78% 57%;                /* #E74C3C */
+    --warning: 38 92% 50%;
 
-    --primary: 280 70% 65%;
+    /* ── Text ── */
+    --foreground: 210 20% 92%;        /* near-white primary */
+    --muted-foreground: 215 15% 55%;  /* secondary labels */
+    --dim-foreground: 215 10% 35%;    /* very dim */
+
+    /* ── Interactive ── */
+    --primary: 210 77% 51%;           /* electric blue */
     --primary-foreground: 0 0% 100%;
+    --primary-hover: 210 77% 58%;
 
-    --secondary: 200 80% 70%;
-    --secondary-foreground: 240 10% 20%;
+    /* ── Structure ── */
+    --border: 220 30% 20%;
+    --border-bright: 210 77% 45%;
+    --input: 220 50% 12%;
+    --ring: 210 77% 51%;
 
-    --muted: 240 10% 90%;
-    --muted-foreground: 240 10% 45%;
+    /* ── Aliases expected by shadcn ── */
+    --card: 220 50% 12%;
+    --card-foreground: 210 20% 92%;
+    --popover: 220 50% 12%;
+    --popover-foreground: 210 20% 92%;
+    --secondary: 220 40% 16%;
+    --secondary-foreground: 210 20% 92%;
+    --muted: 220 40% 16%;
+    --accent: 220 40% 20%;
+    --accent-foreground: 210 20% 92%;
+    --destructive: 6 78% 57%;
+    --destructive-foreground: 0 0% 100%;
 
-    --accent: 340 80% 75%;
-    --accent-foreground: 240 10% 20%;
+    --radius: 0.25rem;
 
-    --destructive: 0 72% 50%;
-    --destructive-foreground: 0 85% 97%;
-
-    --border: 240 10% 85%;
-    --input: 240 10% 90%;
-    --ring: 280 70% 65%;
-
-    --radius: 1rem;
-
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 240 10% 20%;
-    --sidebar-primary: 280 70% 65%;
+    /* ── Sidebar ── */
+    --sidebar-background: 220 74% 8%;
+    --sidebar-foreground: 210 20% 92%;
+    --sidebar-primary: 210 77% 51%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 200 80% 70%;
-    --sidebar-accent-foreground: 240 10% 20%;
-    --sidebar-border: 240 10% 85%;
-    --sidebar-ring: 280 70% 65%;
-
-    --chart-1: 280 70% 65%;
-    --chart-2: 200 80% 70%;
-    --chart-3: 340 80% 75%;
-    --chart-4: 160 60% 60%;
-    --chart-5: 45 90% 70%;
-
-    --aura-purple: 280 70% 65%;
-    --aura-blue: 200 80% 70%;
-    --aura-pink: 340 80% 75%;
-    --aura-mint: 160 60% 60%;
-    --aura-peach: 25 90% 80%;
-
-    --glass-bg: 0 0% 100% / 0.7;
-    --glass-border: 0 0% 100% / 0.5;
-    --glass-shadow: 240 10% 20% / 0.08;
-
-    --gradient-primary: linear-gradient(135deg, hsl(280 70% 65%), hsl(200 80% 70%));
-    --gradient-accent: linear-gradient(135deg, hsl(340 80% 75%), hsl(25 90% 80%));
-    --gradient-soft: linear-gradient(180deg, hsl(240 30% 97%), hsl(240 20% 94%));
-
-    --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    --font-serif: 'Lora', ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
-    --font-mono: 'Space Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-
-    --shadow-soft: 0 4px 30px hsl(var(--glass-shadow));
-    --shadow-glow: 0 0 40px hsl(var(--aura-purple) / 0.3);
-  }
-
-  .dark {
-    --background: 240 15% 10%;
-    --foreground: 240 10% 95%;
-
-    --card: 240 15% 15%;
-    --card-foreground: 240 10% 95%;
-
-    --popover: 240 15% 15%;
-    --popover-foreground: 240 10% 95%;
-
-    --primary: 280 70% 70%;
-    --primary-foreground: 240 15% 10%;
-
-    --secondary: 200 70% 65%;
-    --secondary-foreground: 240 15% 10%;
-
-    --muted: 240 10% 25%;
-    --muted-foreground: 240 10% 65%;
-
-    --accent: 340 70% 70%;
-    --accent-foreground: 240 15% 10%;
-
-    --destructive: 0 70% 55%;
-    --destructive-foreground: 0 85% 97%;
-
-    --border: 240 10% 25%;
-    --input: 240 10% 25%;
-    --ring: 280 70% 70%;
-
-    --sidebar-background: 240 15% 12%;
-    --sidebar-foreground: 240 10% 95%;
-    --sidebar-primary: 280 70% 70%;
-    --sidebar-primary-foreground: 240 15% 10%;
-    --sidebar-accent: 200 70% 65%;
-    --sidebar-accent-foreground: 240 15% 10%;
-    --sidebar-border: 240 10% 25%;
-    --sidebar-ring: 280 70% 70%;
-
-    --chart-1: 280 70% 70%;
-    --chart-2: 200 70% 65%;
-    --chart-3: 340 70% 70%;
-    --chart-4: 160 50% 55%;
-    --chart-5: 45 80% 65%;
-
-    --glass-bg: 240 15% 15% / 0.8;
-    --glass-border: 240 10% 30% / 0.5;
-    --glass-shadow: 0 0% 0% / 0.3;
-
-    --gradient-primary: linear-gradient(135deg, hsl(280 70% 70%), hsl(200 70% 65%));
-    --gradient-accent: linear-gradient(135deg, hsl(340 70% 70%), hsl(25 80% 75%));
-    --gradient-soft: linear-gradient(180deg, hsl(240 15% 10%), hsl(240 15% 8%));
+    --sidebar-accent: 220 40% 16%;
+    --sidebar-accent-foreground: 210 20% 92%;
+    --sidebar-border: 220 30% 20%;
+    --sidebar-ring: 210 77% 51%;
   }
 }
 
 @layer base {
   * {
     @apply border-border;
+    box-sizing: border-box;
+  }
+
+  html {
+    font-feature-settings: "tnum" 1, "lnum" 1;
+    scroll-behavior: smooth;
   }
 
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: 'Barlow', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  /* Odds, scores, large data values */
+  .font-condensed {
+    font-family: 'Barlow Condensed', sans-serif;
+  }
+
+  /* Technical labels, timestamps, IDs */
+  .font-mono {
+    font-family: 'IBM Plex Mono', monospace;
   }
 }
 
+/* ── Scrollbars ── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: hsl(var(--surface)); }
+::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: hsl(var(--blue)); }
+
 @layer components {
-  .glass {
-    @apply bg-card/70 backdrop-blur-xl border border-border/50 shadow-lg;
+
+  /* ── ODDS BUTTON ── */
+  .odds-btn {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: 0.02em;
+    color: hsl(var(--foreground));
+    background: hsl(var(--surface-card));
+    border: 1px solid hsl(var(--border));
+    padding: 0.45rem 0.8rem;
+    cursor: pointer;
+    transition: all 0.12s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.05rem;
+    min-width: 5rem;
+    border-radius: var(--radius);
+    position: relative;
+    overflow: hidden;
   }
 
-  .glass-strong {
-    @apply bg-card/90 backdrop-blur-2xl border border-border/60 shadow-xl;
+  .odds-btn:hover {
+    border-color: hsl(var(--blue));
+    background: hsl(var(--surface-raised));
+    color: hsl(var(--yellow));
   }
 
-  .gradient-text {
-    background: var(--gradient-primary);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+  .odds-btn.selected {
+    background: hsl(var(--blue));
+    border-color: hsl(var(--blue));
+    color: hsl(0 0% 100%);
   }
 
-  .gradient-bg {
-    background: var(--gradient-primary);
+  .odds-btn .odds-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.06em;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
   }
 
-  .aura-glow {
-    box-shadow: 0 0 60px hsl(var(--aura-purple) / 0.4), 0 0 100px hsl(var(--aura-blue) / 0.2);
+  .odds-btn.selected .odds-label {
+    color: rgba(255,255,255,0.75);
   }
+
+  .odds-value {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    font-size: 1.1rem;
+    line-height: 1;
+    transition: color 0.1s;
+  }
+
+  /* ── LIVE FLASH ANIMATIONS ── */
+  @keyframes flashUp {
+    0%   { background: hsl(145 63% 49% / 0.35); color: hsl(var(--success)); }
+    80%  { background: hsl(145 63% 49% / 0.1); }
+    100% { background: transparent; color: inherit; }
+  }
+
+  @keyframes flashDown {
+    0%   { background: hsl(6 78% 57% / 0.35); color: hsl(var(--loss)); }
+    80%  { background: hsl(6 78% 57% / 0.1); }
+    100% { background: transparent; color: inherit; }
+  }
+
+  .flash-up   { animation: flashUp 1.5s ease forwards; }
+  .flash-down { animation: flashDown 1.5s ease forwards; }
+
+  /* ── LIVE BADGE ── */
+  .badge-live {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    color: hsl(var(--success));
+    border: 1px solid hsl(var(--success));
+    padding: 0.1rem 0.45rem;
+    border-radius: 2px;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  .badge-live::before {
+    content: '';
+    width: 5px;
+    height: 5px;
+    background: hsl(var(--success));
+    border-radius: 50%;
+    animation: pulse-dot 1.5s ease infinite;
+    flex-shrink: 0;
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: 0.4; transform: scale(0.7); }
+  }
+
+  /* ── STATUS BADGES ── */
+  .badge-upcoming {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    color: hsl(var(--muted-foreground));
+    border: 1px solid hsl(var(--border));
+    padding: 0.1rem 0.45rem;
+    border-radius: 2px;
+    text-transform: uppercase;
+  }
+
+  .badge-settled {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    color: hsl(var(--blue));
+    border: 1px solid hsl(var(--border-bright));
+    padding: 0.1rem 0.45rem;
+    border-radius: 2px;
+    text-transform: uppercase;
+  }
+
+  /* ── SECTION LABELS ── */
+  .section-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.16em;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
+  }
+
+  /* ── TERMINAL ANIMATION ── */
+  .terminal-text {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    color: hsl(var(--success));
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0; }
+  }
+
+  .cursor-blink::after {
+    content: '█';
+    font-size: 0.65em;
+    margin-left: 1px;
+    animation: blink 0.75s step-end infinite;
+  }
+
+  /* ── SCORE DISPLAY ── */
+  .score-display {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+  }
+
+  /* ── MATCH SEPARATOR ── */
+  .match-divider {
+    border: none;
+    border-top: 1px solid hsl(var(--border));
+    margin: 0;
+  }
+
+  /* ── NAV TABS ── */
+  .nav-tab {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.65rem 1.1rem;
+    color: hsl(var(--muted-foreground));
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+    background: transparent;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+  }
+
+  .nav-tab:hover { color: hsl(var(--foreground)); }
+  .nav-tab.active {
+    color: hsl(var(--yellow));
+    border-bottom-color: hsl(var(--yellow));
+  }
+
+  /* ── STAKE INPUT ── */
+  .stake-input {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 1.5rem;
+    background: hsl(var(--surface));
+    border: 1px solid hsl(var(--border-bright));
+    color: hsl(var(--yellow));
+    padding: 0.6rem 0.85rem;
+    width: 100%;
+    outline: none;
+    text-align: right;
+    border-radius: var(--radius);
+    transition: border-color 0.15s;
+  }
+
+  .stake-input:focus { border-color: hsl(var(--yellow)); }
+  .stake-input::placeholder { color: hsl(var(--dim-foreground)); }
+
+  /* ── CTA PLACE BET ── */
+  .cta-place-bet {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-size: 1rem;
+    background: hsl(var(--blue));
+    color: hsl(0 0% 100%);
+    border: none;
+    padding: 0.9rem;
+    width: 100%;
+    cursor: pointer;
+    border-radius: var(--radius);
+    transition: background 0.12s, transform 0.08s;
+  }
+
+  .cta-place-bet:hover   { background: hsl(var(--primary-hover)); }
+  .cta-place-bet:active  { transform: scale(0.99); }
+  .cta-place-bet:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  /* ── SIDEBAR SPORT ITEM ── */
+  .sport-item {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 600;
+    font-size: 0.9rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 0.55rem 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: hsl(var(--muted-foreground));
+    border-left: 2px solid transparent;
+    transition: all 0.12s;
+  }
+
+  .sport-item:hover {
+    color: hsl(var(--foreground));
+    background: hsl(var(--surface-raised) / 0.5);
+  }
+
+  .sport-item.active {
+    color: hsl(var(--yellow));
+    border-left-color: hsl(var(--yellow));
+    background: hsl(var(--surface-raised) / 0.4);
+  }
+
+  /* ── MARKET ROW ── */
+  .market-row {
+    padding: 1rem;
+    border-bottom: 1px solid hsl(var(--border));
+  }
+
+  .market-row:last-child { border-bottom: none; }
+
+  /* ── TRANSACTION ROW ── */
+  .tx-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 0;
+    border-bottom: 1px solid hsl(var(--border));
+  }
+
+  .tx-row:last-child { border-bottom: none; }
+
+  /* ── DATA TABLE ── */
+  .data-table th {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+    padding: 0.7rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid hsl(var(--border));
+  }
+
+  .data-table td {
+    font-family: 'Barlow', sans-serif;
+    font-size: 0.85rem;
+    padding: 0.8rem 1rem;
+    border-bottom: 1px solid hsl(var(--border) / 0.5);
+    vertical-align: middle;
+  }
+
+  /* ── STATUS PILL ── */
+  .pill-won  { color: hsl(var(--success)); font-weight: 600; }
+  .pill-lost { color: hsl(var(--loss));    font-weight: 600; }
+  .pill-open { color: hsl(var(--yellow));  font-weight: 600; }
+
+  /* ── GLOW EFFECT ON CTA ── */
+  @keyframes glowPulse {
+    0%, 100% { box-shadow: 0 0 8px hsl(210 77% 51% / 0.4); }
+    50%       { box-shadow: 0 0 18px hsl(210 77% 51% / 0.7); }
+  }
+
+  .glow-blue { animation: glowPulse 2s ease infinite; }
+
+  /* ── RISK INDICATOR ── */
+  .risk-low    { color: hsl(var(--success)); }
+  .risk-medium { color: hsl(var(--warning)); }
+  .risk-high   { color: hsl(var(--loss)); }
 }
