@@ -37,6 +37,11 @@ const AppLayout: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
 
+  // Background tracking hooks (no UI, fire-and-forget)
+  useAffiliateTracking();
+  useLoginAnomalyDetection();
+  useBehaviorTracking();
+
   const matchCounts = matches.reduce(
     (acc, m) => { acc[m.sport] = (acc[m.sport] || 0) + 1; return acc; },
     {} as Record<string, number>
