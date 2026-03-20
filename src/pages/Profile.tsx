@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Mail, User, Lock, Bell, LogOut, Shield } from "lucide-react";
+import { Mail, User, Lock, Bell, LogOut, Shield, Smartphone, Activity, Gift, Link2 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -8,6 +8,11 @@ import { useKyc } from "@/hooks/useKyc";
 import KycVerificationFlow from "@/components/kyc/KycVerificationFlow";
 import { useDeviceTracking } from "@/hooks/useDeviceTracking";
 import { useNotificationPreferences, type NotifChannel, type NotifCategory } from "@/hooks/useNotificationPreferences";
+import { useActiveSessions } from "@/hooks/useActiveSessions";
+import { useLoginHistory } from "@/hooks/useLoginHistory";
+import { useLockedFunds } from "@/hooks/useLockedFunds";
+import { formatDistanceToNow } from "date-fns";
+
 const Profile: React.FC = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
@@ -17,10 +22,17 @@ const Profile: React.FC = () => {
   const [displayName, setDisplayName] = useState("");
   const [saving, setSaving] = useState(false);
   const [betsStats, setBetsStats] = useState({ total: 0, wins: 0, wagered: 0, profit: 0 });
+  const [referralCode, setReferralCode] = useState<string | null>(null);
 
   const kyc = useKyc();
   useDeviceTracking();
   const notifPrefs = useNotificationPreferences();
+  const activeSessions = useActiveSessions();
+  const loginHistory = useLoginHistory();
+  const lockedFunds = useLockedFunds();
+
+  const [showSessions, setShowSessions] = useState(false);
+  const [showLoginHistory, setShowLoginHistory] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -48,8 +60,17 @@ const Profile: React.FC = () => {
         setBetsStats({ total: bets.length, wins, wagered, profit });
       }
     };
+    const fetchReferral = async () => {
+      const { data } = await supabase
+        .from("user_referrals" as any)
+        .select("referral_code")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (data) setReferralCode((data as any).referral_code);
+    };
     fetchProfile();
     fetchStats();
+    fetchReferral();
   }, [user]);
 
   const handleSaveName = async () => {
@@ -62,6 +83,15 @@ const Profile: React.FC = () => {
   };
 
   const winRate = betsStats.total > 0 ? Math.round((betsStats.wins / betsStats.total) * 100) : 0;
+
+  const parseDevice = (ua: string | null) => {
+    if (!ua) return "Unknown Device";
+    if (ua.includes("Mobile")) return "Mobile";
+    if (ua.includes("Windows")) return "Windows";
+    if (ua.includes("Mac")) return "macOS";
+    if (ua.includes("Linux")) return "Linux";
+    return "Browser";
+  };
 
   if (loading) {
     return (
@@ -144,7 +174,58 @@ const Profile: React.FC = () => {
           </div>
         </div>
 
-        {/* KYC Verification — Multi-level flow */}
+        {/* Locked Funds Warning */}
+        {!lockedFunds.loading && lockedFunds.lockedBalance > 0 && (
+          <div className="bg-loss/10 border border-loss/30 rounded p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Lock className="w-4 h-4 text-loss" />
+              <p className="font-condensed font-bold text-sm text-loss uppercase tracking-wider">Locked Funds</p>
+            </div>
+            <p className="font-condensed font-black text-xl text-loss">
+              ₹{lockedFunds.lockedBalance.toLocaleString("en-IN")}
+            </p>
+            {lockedFunds.locks.length > 0 && (
+              <div className="mt-2 space-y-1">
+                {lockedFunds.locks.map(lock => (
+                  <div key={lock.id} className="flex items-center justify-between">
+                    <span className="font-mono text-[0.6rem] text-loss/80">
+                      {lock.reason.replace(/_/g, " ")}
+                    </span>
+                    <span className="font-condensed font-bold text-sm text-loss">
+                      ₹{lock.amount.toLocaleString("en-IN")}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Referral Code */}
+        {referralCode && (
+          <div className="bg-surface-card border border-border rounded p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Gift className="w-4 h-4 text-blue" />
+              <p className="font-condensed font-bold text-sm uppercase tracking-wider">Your Referral Code</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <code className="font-mono text-lg text-yellow bg-surface-raised border border-border px-4 py-2 rounded tracking-widest">
+                {referralCode}
+              </code>
+              <button
+                onClick={() => navigator.clipboard.writeText(`${window.location.origin}?ref=${referralCode}`)}
+                className="font-mono text-[0.6rem] text-blue hover:text-blue/80 tracking-wider uppercase"
+              >
+                Copy Link
+              </button>
+            </div>
+            <p className="font-mono text-[0.55rem] text-muted-foreground mt-2">
+              Share your referral link and earn rewards when friends sign up
+            </p>
+          </div>
+        )}
+
+        {/* KYC Verification */}
         {!kyc.loading && kyc.profile && (
           <KycVerificationFlow
             level={kyc.profile.kyc_level}
@@ -184,6 +265,103 @@ const Profile: React.FC = () => {
               </button>
             </div>
           ))}
+        </div>
+
+        {/* Active Sessions */}
+        <div className="bg-surface-card border border-border rounded overflow-hidden">
+          <button
+            onClick={() => setShowSessions(!showSessions)}
+            className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-surface-raised transition-colors"
+          >
+            <div className="flex items-center gap-2">
+              <Smartphone className="w-4 h-4 text-blue" />
+              <span className="font-condensed font-bold text-sm uppercase tracking-wider">
+                Active Devices ({activeSessions.sessions.length})
+              </span>
+            </div>
+            <span className="font-mono text-[0.6rem] text-muted-foreground">{showSessions ? "▲" : "▼"}</span>
+          </button>
+          {showSessions && (
+            <div className="px-5 pb-4 space-y-2">
+              {activeSessions.loading ? (
+                <div className="h-12 bg-surface-raised animate-pulse rounded" />
+              ) : activeSessions.sessions.length === 0 ? (
+                <p className="font-mono text-xs text-muted-foreground py-3 text-center">No active sessions</p>
+              ) : (
+                activeSessions.sessions.map(session => (
+                  <div key={session.id} className="flex items-center justify-between bg-surface-raised border border-border rounded p-3">
+                    <div>
+                      <p className="font-condensed font-600 text-sm text-foreground">
+                        {parseDevice(session.user_agent)}
+                      </p>
+                      <p className="font-mono text-[0.55rem] text-muted-foreground">
+                        {session.screen_resolution} · {session.timezone} · Last seen {formatDistanceToNow(new Date(session.last_seen_at), { addSuffix: true })}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => activeSessions.revokeSession(session.id)}
+                      className="font-mono text-[0.6rem] text-loss hover:text-loss/80 tracking-wider uppercase"
+                    >
+                      Revoke
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Login History */}
+        <div className="bg-surface-card border border-border rounded overflow-hidden">
+          <button
+            onClick={() => setShowLoginHistory(!showLoginHistory)}
+            className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-surface-raised transition-colors"
+          >
+            <div className="flex items-center gap-2">
+              <Activity className="w-4 h-4 text-blue" />
+              <span className="font-condensed font-bold text-sm uppercase tracking-wider">
+                Login History
+              </span>
+            </div>
+            <span className="font-mono text-[0.6rem] text-muted-foreground">{showLoginHistory ? "▲" : "▼"}</span>
+          </button>
+          {showLoginHistory && (
+            <div className="px-5 pb-4 space-y-2">
+              {loginHistory.loading ? (
+                <div className="h-12 bg-surface-raised animate-pulse rounded" />
+              ) : loginHistory.events.length === 0 ? (
+                <p className="font-mono text-xs text-muted-foreground py-3 text-center">No login history</p>
+              ) : (
+                loginHistory.events.map(event => (
+                  <div key={event.id} className="bg-surface-raised border border-border rounded p-3">
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="font-condensed font-600 text-sm text-foreground">
+                        {event.event_type.replace(/_/g, " ")}
+                      </p>
+                      <span className="font-mono text-[0.55rem] text-muted-foreground">
+                        {formatDistanceToNow(new Date(event.created_at), { addSuffix: true })}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {event.is_new_device && (
+                        <span className="font-mono text-[0.55rem] bg-yellow/10 text-yellow border border-yellow/20 px-1.5 py-0.5 rounded">
+                          New Device
+                        </span>
+                      )}
+                      {event.risk_flags.map(flag => (
+                        <span key={flag} className="font-mono text-[0.55rem] bg-loss/10 text-loss border border-loss/20 px-1.5 py-0.5 rounded">
+                          {flag.replace(/_/g, " ")}
+                        </span>
+                      ))}
+                      {event.risk_flags.length === 0 && !event.is_new_device && (
+                        <span className="font-mono text-[0.55rem] text-success">Clean login</span>
+                      )}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
         </div>
 
         {/* Notification Preferences */}

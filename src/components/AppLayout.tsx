@@ -9,6 +9,9 @@ import { useLiveOdds } from "@/hooks/useLiveOdds";
 import { useWallet } from "@/hooks/useWallet";
 import { useMarketSuspensions } from "@/hooks/useMarketSuspensions";
 import { useAuth } from "@/context/AuthContext";
+import { useAffiliateTracking } from "@/hooks/useAffiliateTracking";
+import { useLoginAnomalyDetection } from "@/hooks/useLoginAnomalyDetection";
+import { useBehaviorTracking } from "@/hooks/useBehaviorTracking";
 import { Sport } from "@/data/mockData";
 import { Menu, User, Wallet, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -33,6 +36,11 @@ const AppLayout: React.FC = () => {
   const [activeSport, setActiveSport] = useState<Sport | "All">("All");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
+
+  // Background tracking hooks (no UI, fire-and-forget)
+  useAffiliateTracking();
+  useLoginAnomalyDetection();
+  useBehaviorTracking();
 
   const matchCounts = matches.reduce(
     (acc, m) => { acc[m.sport] = (acc[m.sport] || 0) + 1; return acc; },

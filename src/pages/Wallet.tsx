@@ -5,13 +5,14 @@ import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import {
   ArrowUpRight, ArrowDownLeft, Gift, TrendingUp, Minus,
-  Plus, Shield, ChevronDown, ChevronUp, Wallet as WalletIcon
+  Plus, Shield, ChevronDown, ChevronUp, Wallet as WalletIcon, Lock
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { Database } from "@/integrations/supabase/types";
 import { usePaymentMethods } from "@/hooks/usePaymentMethods";
 import { useWithdrawalLimits } from "@/hooks/useWithdrawalLimits";
+import { useLockedFunds } from "@/hooks/useLockedFunds";
 import PaymentMethodForm from "@/components/wallet/PaymentMethodForm";
 import PaymentMethodsList from "@/components/wallet/PaymentMethodsList";
 import TransactionFilters from "@/components/wallet/TransactionFilters";
@@ -36,6 +37,7 @@ const Wallet: React.FC = () => {
   const { user } = useAuth();
   const paymentMethods = usePaymentMethods();
   const withdrawalLimits = useWithdrawalLimits();
+  const lockedFunds = useLockedFunds();
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [txLoading, setTxLoading] = useState(true);
@@ -147,6 +149,14 @@ const Wallet: React.FC = () => {
                 <p className="font-mono text-[0.6rem] text-blue tracking-wider mt-1">
                   + ₹{wallet.bonusBalance.toLocaleString("en-IN")} bonus (wagering required)
                 </p>
+              )}
+              {!lockedFunds.loading && lockedFunds.lockedBalance > 0 && (
+                <div className="flex items-center gap-1.5 mt-1">
+                  <Lock className="w-3 h-3 text-loss" />
+                  <p className="font-mono text-[0.6rem] text-loss tracking-wider">
+                    ₹{lockedFunds.lockedBalance.toLocaleString("en-IN")} locked
+                  </p>
+                </div>
               )}
             </div>
             <WalletIcon className="w-6 h-6 text-muted-foreground" />
