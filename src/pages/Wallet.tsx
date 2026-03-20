@@ -5,13 +5,14 @@ import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import {
   ArrowUpRight, ArrowDownLeft, Gift, TrendingUp, Minus,
-  Plus, Shield, ChevronDown, ChevronUp, Wallet as WalletIcon
+  Plus, Shield, ChevronDown, ChevronUp, Wallet as WalletIcon, Lock
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { Database } from "@/integrations/supabase/types";
 import { usePaymentMethods } from "@/hooks/usePaymentMethods";
 import { useWithdrawalLimits } from "@/hooks/useWithdrawalLimits";
+import { useLockedFunds } from "@/hooks/useLockedFunds";
 import PaymentMethodForm from "@/components/wallet/PaymentMethodForm";
 import PaymentMethodsList from "@/components/wallet/PaymentMethodsList";
 import TransactionFilters from "@/components/wallet/TransactionFilters";
