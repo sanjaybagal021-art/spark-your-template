@@ -31,13 +31,17 @@ export function useBehaviorTracking() {
     pagePath?: string
   ) => {
     if (!user) return;
-    await supabase.from("user_behavior_events" as any).insert({
-      user_id: user.id,
-      event_type: eventType,
-      event_data: eventData,
-      page_path: pagePath ?? window.location.pathname,
-      session_id: getSessionId(),
-    }).catch(() => {}); // Fire and forget
+    try {
+      await supabase.from("user_behavior_events" as any).insert({
+        user_id: user.id,
+        event_type: eventType,
+        event_data: eventData,
+        page_path: pagePath ?? window.location.pathname,
+        session_id: getSessionId(),
+      });
+    } catch {
+      // Fire and forget
+    }
   }, [user]);
 
   // Track session start
