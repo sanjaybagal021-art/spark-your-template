@@ -150,6 +150,14 @@ const Wallet: React.FC = () => {
                   + ₹{wallet.bonusBalance.toLocaleString("en-IN")} bonus (wagering required)
                 </p>
               )}
+              {!lockedFunds.loading && lockedFunds.lockedBalance > 0 && (
+                <div className="flex items-center gap-1.5 mt-1">
+                  <Lock className="w-3 h-3 text-loss" />
+                  <p className="font-mono text-[0.6rem] text-loss tracking-wider">
+                    ₹{lockedFunds.lockedBalance.toLocaleString("en-IN")} locked
+                  </p>
+                </div>
+              )}
             </div>
             <WalletIcon className="w-6 h-6 text-muted-foreground" />
           </div>
