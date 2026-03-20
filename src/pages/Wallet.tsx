@@ -37,6 +37,7 @@ const Wallet: React.FC = () => {
   const { user } = useAuth();
   const paymentMethods = usePaymentMethods();
   const withdrawalLimits = useWithdrawalLimits();
+  const lockedFunds = useLockedFunds();
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [txLoading, setTxLoading] = useState(true);
