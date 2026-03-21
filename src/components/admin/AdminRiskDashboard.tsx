@@ -123,7 +123,7 @@ const AdminRiskDashboard: React.FC = () => {
     setProcessing(true);
     // Calculate risk score from bet history
     const { data: bets } = await supabase
-      .from("bets")
+      .from("bets" as any)
       .select("status, stake, odds, profit_loss")
       .eq("user_id", userId);
 
@@ -133,12 +133,13 @@ const AdminRiskDashboard: React.FC = () => {
       return;
     }
 
-    const totalBets = bets.length;
-    const wins = bets.filter(b => b.status === "won").length;
+    const betsArr = bets as any[];
+    const totalBets = betsArr.length;
+    const wins = betsArr.filter(b => b.status === "won").length;
     const winRate = wins / totalBets;
-    const totalProfit = bets.reduce((s, b) => s + (Number(b.profit_loss) || 0), 0);
-    const avgOdds = bets.reduce((s, b) => s + Number(b.odds), 0) / totalBets;
-    const highStakeBets = bets.filter(b => Number(b.stake) > 10000).length;
+    const totalProfit = betsArr.reduce((s: number, b: any) => s + (Number(b.profit_loss) || 0), 0);
+    const avgOdds = betsArr.reduce((s: number, b: any) => s + Number(b.odds), 0) / totalBets;
+    const highStakeBets = betsArr.filter((b: any) => Number(b.stake) > 10000).length;
 
     // Score components (0-100)
     let score = 0;

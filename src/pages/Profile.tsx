@@ -39,25 +39,26 @@ const Profile: React.FC = () => {
     const fetchProfile = async () => {
       const { data } = await supabase
         .from("profiles")
-        .select("display_name, username, phone")
+        .select("display_name, username")
         .eq("user_id", user.id)
         .single();
       if (data) {
-        setProfile(data);
+        setProfile({ display_name: data.display_name, username: data.username, phone: "" });
         setDisplayName(data.display_name ?? "");
       }
       setLoading(false);
     };
     const fetchStats = async () => {
       const { data: bets } = await supabase
-        .from("bets")
+        .from("bets" as any)
         .select("stake, potential_win, profit_loss, status")
         .eq("user_id", user.id);
       if (bets) {
-        const wagered = bets.reduce((s, b) => s + Number(b.stake), 0);
-        const wins = bets.filter((b) => b.status === "won").length;
-        const profit = bets.reduce((s, b) => s + (Number(b.profit_loss) || 0), 0);
-        setBetsStats({ total: bets.length, wins, wagered, profit });
+        const betsArr = bets as any[];
+        const wagered = betsArr.reduce((s: number, b: any) => s + Number(b.stake), 0);
+        const wins = betsArr.filter((b: any) => b.status === "won").length;
+        const profit = betsArr.reduce((s: number, b: any) => s + (Number(b.profit_loss) || 0), 0);
+        setBetsStats({ total: betsArr.length, wins, wagered, profit });
       }
     };
     const fetchReferral = async () => {

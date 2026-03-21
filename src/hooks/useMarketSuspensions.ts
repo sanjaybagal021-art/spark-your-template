@@ -16,9 +16,9 @@ export function useMarketSuspensions() {
 
   const fetchSuspensions = useCallback(async () => {
     const { data } = await supabase
-      .from("market_suspensions")
+      .from("market_suspensions" as any)
       .select("id, match_id, market_name, reason, suspended_at");
-    if (data) setSuspensions(data as Suspension[]);
+    if (data) setSuspensions(data as any as Suspension[]);
   }, []);
 
   useEffect(() => {
@@ -42,7 +42,7 @@ export function useMarketSuspensions() {
     suspensions.some((s) => s.match_id === matchId && s.market_name === marketName);
 
   const suspendMarket = async (matchId: string, marketName: string, reason?: string) => {
-    await supabase.from("market_suspensions").upsert(
+    await (supabase.from("market_suspensions" as any) as any).upsert(
       { match_id: matchId, market_name: marketName, reason: reason ?? null, suspended_by: user?.id },
       { onConflict: "match_id,market_name" }
     );
@@ -50,7 +50,7 @@ export function useMarketSuspensions() {
 
   const unsuspendMarket = async (matchId: string, marketName: string) => {
     await supabase
-      .from("market_suspensions")
+      .from("market_suspensions" as any)
       .delete()
       .eq("match_id", matchId)
       .eq("market_name", marketName);

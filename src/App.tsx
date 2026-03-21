@@ -15,6 +15,9 @@ import Profile from "@/pages/Profile";
 import AdminDashboard from "@/pages/AdminDashboard";
 import AuthPage from "@/pages/auth/AuthPage";
 import ResetPasswordPage from "@/pages/auth/ResetPasswordPage";
+import NotificationsPage from "@/pages/NotificationsPage";
+import SessionsPage from "@/pages/SessionsPage";
+import AccountStatusPage from "@/pages/AccountStatusPage";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -39,6 +42,9 @@ const App = () => (
                 <Route path="/my-bets" element={<MyBets />} />
                 <Route path="/wallet" element={<Wallet />} />
                 <Route path="/profile" element={<Profile />} />
+                <Route path="/notifications" element={<NotificationsPage />} />
+                <Route path="/sessions" element={<SessionsPage />} />
+                <Route path="/account-status" element={<AccountStatusPage />} />
 
                 {/* Admin-only routes — checked server-side via has_role() */}
                 <Route element={<AdminRoute />}>

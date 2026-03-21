@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { Match, INITIAL_MATCHES } from "@/data/mockData";
 
 // ---------------------------------------------------------------------------
-// Local odds nudge engine (fallback / enrichment)
+// Local odds nudge engine (simulated live odds)
 // ---------------------------------------------------------------------------
 function nudgeOdds(value: number): { value: number; trend: "up" | "down" | null } {
   const delta = (Math.random() - 0.5) * 0.12;
@@ -12,44 +12,53 @@ function nudgeOdds(value: number): { value: number; trend: "up" | "down" | null 
 }
 
 // ---------------------------------------------------------------------------
-// CricAPI live match shape (minimal)
+// Cricbuzz RapidAPI match shape (minimal)
 // ---------------------------------------------------------------------------
-interface CricAPIMatch {
-  id: string;
-  name: string;
+interface CricbuzzMatch {
+  matchId: number;
+  matchDescription: string;
+  matchFormat: string;
   status: string;
-  matchType: string;
-  score?: { r: number; w: number; o: number; inning: string }[];
-  teamInfo?: { name: string; shortname: string }[];
-  dateTimeGMT?: string;
+  state: string;
+  team1?: { teamName: string; teamSName: string };
+  team2?: { teamName: string; teamSName: string };
+  venueInfo?: { ground: string; city: string };
+  currentBatTeamId?: number;
+  matchScore?: {
+    team1Score?: { inngs1?: { runs: number; wickets: number; overs: number } };
+    team2Score?: { inngs1?: { runs: number; wickets: number; overs: number } };
+  };
+  seriesName?: string;
+  startDate?: string;
 }
 
-// Map a CricAPI match to our internal Match shape (merges with mock data where possible)
-function mapCricAPIMatch(apiMatch: CricAPIMatch, existing?: Match): Partial<Match> {
-  const isLive = apiMatch.status === "Live" || apiMatch.status?.toLowerCase().includes("live");
-  const score1 = apiMatch.score?.[0]
-    ? `${apiMatch.score[0].r}/${apiMatch.score[0].w} (${apiMatch.score[0].o} ov)`
-    : undefined;
-  const score2 = apiMatch.score?.[1]
-    ? `${apiMatch.score[1].r}/${apiMatch.score[1].w} (${apiMatch.score[1].o} ov)`
-    : undefined;
+function mapCricbuzzMatch(apiMatch: CricbuzzMatch, existing?: Match): Partial<Match> {
+  const isLive = apiMatch.state === "In Progress" || apiMatch.status?.toLowerCase().includes("opt to");
+  const isCompleted = apiMatch.state === "Complete";
 
-  const nameParts = apiMatch.name.split(" vs ");
-  const team1 = (apiMatch.teamInfo?.[0]?.shortname) ?? (nameParts[0]?.trim() ?? "");
-  const team2 = (apiMatch.teamInfo?.[1]?.shortname) ?? (nameParts[1]?.trim() ?? "");
+  const t1Score = apiMatch.matchScore?.team1Score?.inngs1;
+  const t2Score = apiMatch.matchScore?.team2Score?.inngs1;
+
+  const score1 = t1Score ? `${t1Score.runs}/${t1Score.wickets} (${t1Score.overs} ov)` : undefined;
+  const score2 = t2Score ? `${t2Score.runs}/${t2Score.wickets} (${t2Score.overs} ov)` : undefined;
+
+  const team1Short = apiMatch.team1?.teamSName ?? existing?.team1Short ?? "";
+  const team2Short = apiMatch.team2?.teamSName ?? existing?.team2Short ?? "";
 
   return {
-    id: existing?.id ?? apiMatch.id,
-    team1: (team1 || existing?.team1) ?? "",
-    team2: (team2 || existing?.team2) ?? "",
+    id: existing?.id ?? String(apiMatch.matchId),
+    team1: apiMatch.team1?.teamName ?? existing?.team1 ?? "",
+    team2: apiMatch.team2?.teamName ?? existing?.team2 ?? "",
+    team1Short,
+    team2Short,
     score1: score1 ?? existing?.score1,
     score2: score2 ?? existing?.score2,
-    status: isLive ? "live" : (existing?.status ?? "upcoming"),
+    status: isLive ? "live" : isCompleted ? "completed" : (existing?.status ?? "upcoming"),
     sport: "Cricket",
-    detail: apiMatch.score?.[0] ? `${apiMatch.score[0].o} ov` : existing?.detail,
+    detail: t1Score ? `${t1Score.overs} ov` : existing?.detail,
     markets: existing?.markets ?? [],
-    league: existing?.league ?? (apiMatch.matchType?.toUpperCase() ?? "CRICKET"),
-    time: existing?.time ?? (apiMatch.dateTimeGMT ? new Date(apiMatch.dateTimeGMT).toLocaleTimeString() : "TBD"),
+    league: existing?.league ?? (apiMatch.seriesName?.toUpperCase() ?? apiMatch.matchFormat?.toUpperCase() ?? "CRICKET"),
+    time: existing?.time ?? "TBD",
   };
 }
 
@@ -63,8 +72,7 @@ export function useLiveOdds() {
   const cricTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // ------------------------------------------------------------------
-  // Fetch live cricket data from our edge function proxy
-  // Silently falls back to simulated data on any error
+  // Fetch live cricket data from our edge function proxy (Cricbuzz)
   // ------------------------------------------------------------------
   const fetchCricketData = useCallback(async () => {
     try {
@@ -88,17 +96,12 @@ export function useLiveOdds() {
       );
       clearTimeout(timeout);
 
-      // Any non-200 → silently use simulated odds
       if (!res.ok) return;
 
       const json = await res.json();
+      if (json?.error || !json?.matches || !Array.isArray(json.matches)) return;
 
-      // If the response is an error object, bail out silently
-      if (json?.error || !json?.data || !Array.isArray(json.data)) return;
-
-      const liveApiMatches: CricAPIMatch[] = json.data.filter(
-        (m: CricAPIMatch) => m.matchType === "t20" || m.matchType === "odi" || m.matchType === "test"
-      );
+      const liveApiMatches: CricbuzzMatch[] = json.matches;
 
       if (liveApiMatches.length === 0) return;
 
@@ -106,15 +109,15 @@ export function useLiveOdds() {
         const updated = [...prev];
 
         liveApiMatches.forEach((apiMatch) => {
+          const t1Name = (apiMatch.team1?.teamSName ?? "").toLowerCase();
           const existingIdx = updated.findIndex(
-            (m) => m.id === apiMatch.id ||
-              (m.sport === "Cricket" && m.team1.toLowerCase().includes(
-                (apiMatch.name.split(" vs ")[0]?.trim() ?? "").toLowerCase()
-              ))
+            (m) => m.id === String(apiMatch.matchId) ||
+              m.team1Short.toLowerCase() === t1Name ||
+              m.team2Short.toLowerCase() === t1Name
           );
 
           if (existingIdx >= 0) {
-            const patch = mapCricAPIMatch(apiMatch, updated[existingIdx]);
+            const patch = mapCricbuzzMatch(apiMatch, updated[existingIdx]);
             updated[existingIdx] = { ...updated[existingIdx], ...patch };
           }
         });
@@ -122,12 +125,12 @@ export function useLiveOdds() {
         return updated;
       });
     } catch {
-      // Silently fail — fall back to simulated odds, never show an error
+      // Silently fail — fall back to simulated odds
     }
   }, []);
 
   // ------------------------------------------------------------------
-  // Simulated odds engine (always running for all sports)
+  // Simulated odds engine (always running for cricket)
   // ------------------------------------------------------------------
   const updateOdds = useCallback(() => {
     const newFlash: Record<string, "up" | "down"> = {};
@@ -146,8 +149,8 @@ export function useLiveOdds() {
               return { ...odd, value, trend };
             }),
           })),
-          // Cricket score bumps
-          ...(match.sport === "Cricket" && Math.random() > 0.7
+          // Cricket score bumps (simulated)
+          ...(Math.random() > 0.7
             ? {
                 score1: match.score1
                   ? (() => {
@@ -157,15 +160,6 @@ export function useLiveOdds() {
                       return `${runs + Math.floor(Math.random() * 6)}/${parts[1]}`;
                     })()
                   : match.score1,
-              }
-            : {}),
-          // Football minute bumps
-          ...(match.sport === "Football" && match.detail && Math.random() > 0.8
-            ? {
-                detail: (() => {
-                  const min = parseInt(match.detail ?? "0");
-                  return `${Math.min(90, min + 1)}'`;
-                })(),
               }
             : {}),
         };
@@ -180,7 +174,7 @@ export function useLiveOdds() {
     // Odds simulation: every 2.8s
     oddsTimerRef.current = setInterval(updateOdds, 2800);
 
-    // Cricket live data: every 60s (CricAPI free tier: ~100 req/day)
+    // Cricket live data: every 60s
     fetchCricketData();
     cricTimerRef.current = setInterval(fetchCricketData, 60_000);
 

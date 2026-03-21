@@ -14,14 +14,11 @@ const TABS: { key: TabFilter; label: string }[] = [
 ];
 
 const Index: React.FC = () => {
-  const { matches, flashMap, betSlip, activeSport } = useOutletContext<LayoutContext>();
+  const { matches, flashMap, betSlip } = useOutletContext<LayoutContext>();
   const [tab, setTab] = useState<TabFilter>("all");
 
-  const filtered = matches
-    .filter((m) => activeSport === "All" || m.sport === activeSport)
-    .filter((m) => tab === "all" || m.status === tab);
-
-  const liveCount = matches.filter((m) => (activeSport === "All" || m.sport === activeSport) && m.status === "live").length;
+  const filtered = matches.filter((m) => tab === "all" || m.status === tab);
+  const liveCount = matches.filter((m) => m.status === "live").length;
 
   return (
     <div className="pb-20 lg:pb-8">
@@ -46,7 +43,7 @@ const Index: React.FC = () => {
         {filtered.length === 0 ? (
           <div className="py-20 text-center">
             <p className="font-mono text-sm text-muted-foreground tracking-wider uppercase">
-              No matches found
+              No cricket matches found
             </p>
           </div>
         ) : (

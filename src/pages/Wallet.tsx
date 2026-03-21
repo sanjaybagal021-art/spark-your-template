@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import {
   ArrowUpRight, ArrowDownLeft, Gift, TrendingUp, Minus,
-  Plus, Shield, ChevronDown, ChevronUp, Wallet as WalletIcon, Lock
+  Plus, Shield, ChevronDown, ChevronUp, Wallet as WalletIcon, Lock, AlertTriangle,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
@@ -16,6 +16,7 @@ import { useLockedFunds } from "@/hooks/useLockedFunds";
 import PaymentMethodForm from "@/components/wallet/PaymentMethodForm";
 import PaymentMethodsList from "@/components/wallet/PaymentMethodsList";
 import TransactionFilters from "@/components/wallet/TransactionFilters";
+import DepositFlow from "@/components/wallet/DepositFlow";
 
 type Transaction = Database["public"]["Tables"]["transactions"]["Row"];
 
@@ -28,7 +29,6 @@ const TX_ICONS: Record<string, React.ReactNode> = {
   bonus: <Gift className="w-4 h-4 text-blue" />,
 };
 
-const DEPOSIT_AMOUNTS = [500, 1000, 2000, 5000];
 const WITHDRAW_MIN = 100;
 const WITHDRAW_MAX = 100000;
 
@@ -94,16 +94,6 @@ const Wallet: React.FC = () => {
     setTimeout(() => setMsg(null), 4000);
   };
 
-  const handleDeposit = async () => {
-    const amt = parseFloat(amount);
-    if (!amt || amt <= 0) return;
-    setProcessing(true);
-    const ok = await wallet.credit(amt, "deposit", `Deposit via ${paymentMethods.methods.find(m => m.id === selectedMethodId)?.label ?? "UPI"}`);
-    flash(ok ? `₹${amt.toLocaleString("en-IN")} deposited!` : "Deposit failed.", ok);
-    setProcessing(false);
-    if (ok) { setAmount(""); setPanel("none"); }
-  };
-
   const handleWithdraw = async () => {
     if (!withdrawalLimits.canWithdraw) {
       flash(withdrawalLimits.reason, false);
@@ -119,10 +109,17 @@ const Wallet: React.FC = () => {
     }
     setProcessing(true);
     const method = paymentMethods.methods.find(m => m.id === selectedMethodId);
-    const ok = await wallet.debit(amt, `Withdrawal to ${method?.label ?? "account"}`);
-    flash(ok ? `₹${amt.toLocaleString("en-IN")} withdrawal initiated` : "Withdrawal failed.", ok);
+    const result = await wallet.withdraw(amt, `Withdrawal to ${method?.label ?? "account"}`);
+    if (result.success) {
+      const msg = result.status === "pending" 
+        ? `₹${amt.toLocaleString("en-IN")} withdrawal under review — funds locked` 
+        : `₹${amt.toLocaleString("en-IN")} withdrawal initiated`;
+      flash(msg, true);
+      setAmount(""); setPanel("none"); withdrawalLimits.refresh(); lockedFunds.refresh();
+    } else {
+      flash(result.message ?? "Withdrawal failed.", false);
+    }
     setProcessing(false);
-    if (ok) { setAmount(""); setPanel("none"); withdrawalLimits.refresh(); }
   };
 
   return (
@@ -160,6 +157,28 @@ const Wallet: React.FC = () => {
               )}
             </div>
             <WalletIcon className="w-6 h-6 text-muted-foreground" />
+          </div>
+
+          {/* 3-Balance Breakdown */}
+          <div className="grid grid-cols-3 gap-2 mt-4 pt-4 border-t border-border">
+            <div className="text-center">
+              <p className="font-mono text-[0.5rem] text-muted-foreground uppercase tracking-wider">Main</p>
+              <p className="font-condensed font-bold text-sm text-success mt-0.5">
+                ₹{wallet.balance.toLocaleString("en-IN")}
+              </p>
+            </div>
+            <div className="text-center">
+              <p className="font-mono text-[0.5rem] text-muted-foreground uppercase tracking-wider">Bonus</p>
+              <p className="font-condensed font-bold text-sm text-blue mt-0.5">
+                ₹{wallet.bonusBalance.toLocaleString("en-IN")}
+              </p>
+            </div>
+            <div className="text-center">
+              <p className="font-mono text-[0.5rem] text-muted-foreground uppercase tracking-wider">Locked</p>
+              <p className="font-condensed font-bold text-sm text-loss mt-0.5">
+                ₹{lockedFunds.lockedBalance.toLocaleString("en-IN")}
+              </p>
+            </div>
           </div>
 
           <div className="flex gap-3 mt-5">
@@ -201,71 +220,62 @@ const Wallet: React.FC = () => {
           )}
         </div>
 
-        {/* ── Deposit / Withdraw Panel ── */}
-        {(panel === "deposit" || panel === "withdraw") && (
+        {/* ── Deposit Panel (New Flow) ── */}
+        {panel === "deposit" && (
+          <div className="bg-surface-card border border-border rounded p-5">
+            <DepositFlow onClose={() => setPanel("none")} />
+          </div>
+        )}
+
+        {/* ── Withdraw Panel ── */}
+        {panel === "withdraw" && (
           <div className="bg-surface-card border border-border rounded p-5 space-y-4">
             <p className="font-condensed font-700 text-lg uppercase tracking-wider">
-              {panel === "deposit" ? "Deposit Funds" : "Withdraw Funds"}
+              Withdraw Funds
             </p>
-
-            {/* Quick amounts for deposit */}
-            {panel === "deposit" && (
-              <div className="grid grid-cols-4 gap-1.5">
-                {DEPOSIT_AMOUNTS.map((q) => (
-                  <button
-                    key={q}
-                    onClick={() => setAmount(String(q))}
-                    className={cn(
-                      "font-condensed font-600 text-xs py-2 border rounded transition-all",
-                      amount === String(q)
-                        ? "border-blue text-blue bg-blue/10"
-                        : "border-border bg-surface hover:border-blue hover:text-blue text-muted-foreground"
-                    )}
-                  >
-                    ₹{q >= 1000 ? `${q / 1000}K` : q}
-                  </button>
-                ))}
-              </div>
-            )}
 
             {/* Amount input */}
             <div>
               <label className="section-label block mb-1.5">Amount (₹)</label>
               <input
                 type="number"
-                placeholder={panel === "withdraw" ? `Min ₹${WITHDRAW_MIN}` : "0.00"}
+                placeholder={`Min ₹${WITHDRAW_MIN}`}
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 className="stake-input"
-                min={panel === "withdraw" ? WITHDRAW_MIN : 1}
-                max={panel === "withdraw" ? WITHDRAW_MAX : undefined}
+                min={WITHDRAW_MIN}
+                max={WITHDRAW_MAX}
               />
-              {panel === "withdraw" && (
-                <div className="space-y-1 mt-1">
-                  <p className="font-mono text-[0.55rem] text-muted-foreground">
-                    Limits: ₹{WITHDRAW_MIN} – ₹{WITHDRAW_MAX.toLocaleString("en-IN")}
+              <div className="space-y-1 mt-1">
+                <p className="font-mono text-[0.55rem] text-muted-foreground">
+                  Limits: ₹{WITHDRAW_MIN} – ₹{WITHDRAW_MAX.toLocaleString("en-IN")}
+                </p>
+                {withdrawalLimits.dailyLimit !== null && (
+                  <p className={cn("font-mono text-[0.55rem]",
+                    withdrawalLimits.remaining === 0 ? "text-loss" : "text-yellow"
+                  )}>
+                    Daily limit: ₹{withdrawalLimits.dailyLimit.toLocaleString("en-IN")} · 
+                    Remaining: ₹{(withdrawalLimits.remaining ?? 0).toLocaleString("en-IN")} · 
+                    KYC Level {withdrawalLimits.kycLevel}
                   </p>
-                  {withdrawalLimits.dailyLimit !== null && (
-                    <p className={cn("font-mono text-[0.55rem]",
-                      withdrawalLimits.remaining === 0 ? "text-loss" : "text-yellow"
-                    )}>
-                      Daily limit: ₹{withdrawalLimits.dailyLimit.toLocaleString("en-IN")} · 
-                      Remaining: ₹{(withdrawalLimits.remaining ?? 0).toLocaleString("en-IN")} · 
-                      KYC Level {withdrawalLimits.kycLevel}
-                    </p>
-                  )}
-                  {withdrawalLimits.dailyLimit === null && (
-                    <p className="font-mono text-[0.55rem] text-success">Unlimited (KYC Level 2)</p>
-                  )}
-                </div>
-              )}
+                )}
+                {withdrawalLimits.dailyLimit === null && (
+                  <p className="font-mono text-[0.55rem] text-success">Unlimited (KYC Level 2)</p>
+                )}
+              </div>
+            </div>
+
+            {/* Withdrawal info */}
+            <div className="bg-yellow/10 border border-yellow/30 rounded p-2 flex items-start gap-2">
+              <AlertTriangle className="w-3.5 h-3.5 text-yellow flex-shrink-0 mt-0.5" />
+              <p className="font-mono text-[0.55rem] text-yellow">
+                Funds will be locked during review. Admin approval required. Processing: 5 mins – 48 hrs.
+              </p>
             </div>
 
             {/* Payment method selector */}
             <div>
-              <label className="section-label block mb-1.5">
-                {panel === "deposit" ? "Pay Via" : "Withdraw To"}
-              </label>
+              <label className="section-label block mb-1.5">Withdraw To</label>
               {paymentMethods.methods.length > 0 ? (
                 <PaymentMethodsList
                   methods={paymentMethods.methods}
@@ -286,11 +296,11 @@ const Wallet: React.FC = () => {
             </div>
 
             <button
-              onClick={panel === "deposit" ? handleDeposit : handleWithdraw}
+              onClick={handleWithdraw}
               disabled={processing || !amount}
               className="cta-place-bet w-full disabled:opacity-50"
             >
-              {processing ? "Processing..." : panel === "deposit" ? "Deposit" : "Withdraw"}
+              {processing ? "Processing..." : "Withdraw & Lock Funds"}
             </button>
           </div>
         )}
@@ -303,12 +313,37 @@ const Wallet: React.FC = () => {
             </p>
             <PaymentMethodForm
               onSubmit={async (type, label, details, setDef) => {
-                const ok = await paymentMethods.addMethod(type, label, details, setDef);
+                const ok = await paymentMethods.addMethod(type as any, label, details, setDef);
                 if (ok) setPanel("none");
                 return ok;
               }}
               onCancel={() => setPanel("none")}
             />
+          </div>
+        )}
+
+        {/* ── Locked Funds Detail ── */}
+        {!lockedFunds.loading && lockedFunds.locks.length > 0 && (
+          <div className="bg-surface-card border border-border rounded overflow-hidden">
+            <div className="px-5 py-3.5 flex items-center gap-2 border-b border-border">
+              <Lock className="w-4 h-4 text-loss" />
+              <span className="font-condensed font-bold text-sm uppercase tracking-wider">
+                Locked Funds ({lockedFunds.locks.length})
+              </span>
+            </div>
+            <div className="divide-y divide-border/50">
+              {lockedFunds.locks.map((lock) => (
+                <div key={lock.id} className="px-5 py-3 flex items-center justify-between">
+                  <div>
+                    <p className="font-mono text-xs text-loss">₹{lock.amount.toLocaleString("en-IN")}</p>
+                    <p className="font-mono text-[0.5rem] text-muted-foreground capitalize">{lock.reason.replace(/_/g, " ")}</p>
+                  </div>
+                  <p className="font-mono text-[0.5rem] text-muted-foreground">
+                    {formatDistanceToNow(new Date(lock.locked_at), { addSuffix: true })}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
@@ -393,9 +428,9 @@ const Wallet: React.FC = () => {
                       >
                         {tx.amount > 0 ? "+" : ""}₹{Math.abs(tx.amount).toLocaleString("en-IN")}
                       </span>
-                      {tx.balance_after !== null && (
+                      {(tx as any).balance_after != null && (
                         <p className="font-mono text-[0.5rem] text-dim-foreground">
-                          Bal: ₹{tx.balance_after.toLocaleString("en-IN")}
+                          Bal: ₹{Number((tx as any).balance_after).toLocaleString("en-IN")}
                         </p>
                       )}
                     </div>

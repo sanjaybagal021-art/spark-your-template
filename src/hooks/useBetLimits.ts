@@ -21,16 +21,17 @@ export function useBetLimits() {
   useEffect(() => {
     if (cached) return;
     supabase
-      .from("bet_limits")
+      .from("bet_limits" as any)
       .select("min_stake, max_stake, max_win")
       .eq("market_name", "default")
       .single()
       .then(({ data }) => {
         if (data) {
+          const d = data as any;
           cached = {
-            min_stake: Number(data.min_stake),
-            max_stake: Number(data.max_stake),
-            max_win: Number(data.max_win),
+            min_stake: Number(d.min_stake),
+            max_stake: Number(d.max_stake),
+            max_win: Number(d.max_win),
           };
           setLimits(cached);
         }

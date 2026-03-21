@@ -24,7 +24,7 @@ export function useLockedFunds() {
 
     const [balRes, locksRes] = await Promise.all([
       supabase
-        .from("wallet_balances")
+        .from("wallet_balances" as any)
         .select("locked_balance")
         .eq("user_id", user.id)
         .single(),

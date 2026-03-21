@@ -14,9 +14,71 @@ export type Database = {
   }
   public: {
     Tables: {
-      bet_limits: {
+      account_recovery_requests: {
         Row: {
           created_at: string
+          id: string
+          ip_address: string | null
+          notes: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
+          type: string
+          user_email: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          type?: string
+          user_email: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          type?: string
+          user_email?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      affiliates: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string | null
+        }
+        Relationships: []
+      }
+      bet_limits: {
+        Row: {
           id: string
           market_name: string
           max_stake: number
@@ -25,7 +87,6 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          created_at?: string
           id?: string
           market_name?: string
           max_stake?: number
@@ -34,7 +95,6 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          created_at?: string
           id?: string
           market_name?: string
           max_stake?: number
@@ -92,6 +152,150 @@ export type Database = {
         }
         Relationships: []
       }
+      kyc_documents: {
+        Row: {
+          created_at: string
+          doc_type: string
+          file_name: string
+          file_url: string
+          id: string
+          reject_reason: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          doc_type: string
+          file_name: string
+          file_url: string
+          id?: string
+          reject_reason?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          doc_type?: string
+          file_name?: string
+          file_url?: string
+          id?: string
+          reject_reason?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      linked_accounts: {
+        Row: {
+          account_a: string
+          account_b: string
+          action_at: string | null
+          action_by: string | null
+          action_taken: string
+          confidence_score: number
+          detected_at: string
+          id: string
+          link_type: string
+          notes: string | null
+        }
+        Insert: {
+          account_a: string
+          account_b: string
+          action_at?: string | null
+          action_by?: string | null
+          action_taken?: string
+          confidence_score?: number
+          detected_at?: string
+          id?: string
+          link_type: string
+          notes?: string | null
+        }
+        Update: {
+          account_a?: string
+          account_b?: string
+          action_at?: string | null
+          action_by?: string | null
+          action_taken?: string
+          confidence_score?: number
+          detected_at?: string
+          id?: string
+          link_type?: string
+          notes?: string | null
+        }
+        Relationships: []
+      }
+      locked_funds: {
+        Row: {
+          amount: number
+          id: string
+          locked_at: string
+          notes: string | null
+          reason: string
+          released_at: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          id?: string
+          locked_at?: string
+          notes?: string | null
+          reason: string
+          released_at?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          id?: string
+          locked_at?: string
+          notes?: string | null
+          reason?: string
+          released_at?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      login_events: {
+        Row: {
+          created_at: string
+          device_fingerprint: string | null
+          event_type: string
+          id: string
+          ip_address: string | null
+          is_new_device: boolean
+          is_new_ip: boolean
+          risk_flags: string[]
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          device_fingerprint?: string | null
+          event_type: string
+          id?: string
+          ip_address?: string | null
+          is_new_device?: boolean
+          is_new_ip?: boolean
+          risk_flags?: string[]
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          device_fingerprint?: string | null
+          event_type?: string
+          id?: string
+          ip_address?: string | null
+          is_new_device?: boolean
+          is_new_ip?: boolean
+          risk_flags?: string[]
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       market_suspensions: {
         Row: {
           id: string
@@ -119,11 +323,35 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_preferences: {
+        Row: {
+          category: string
+          channel: string
+          enabled: boolean
+          id: string
+          user_id: string
+        }
+        Insert: {
+          category: string
+          channel: string
+          enabled?: boolean
+          id?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          channel?: string
+          enabled?: boolean
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
-          body: string | null
           created_at: string
           id: string
+          message: string | null
           read: boolean
           reference_id: string | null
           title: string
@@ -131,19 +359,19 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          body?: string | null
           created_at?: string
           id?: string
+          message?: string | null
           read?: boolean
           reference_id?: string | null
           title: string
-          type?: string
+          type: string
           user_id: string
         }
         Update: {
-          body?: string | null
           created_at?: string
           id?: string
+          message?: string | null
           read?: boolean
           reference_id?: string | null
           title?: string
@@ -152,14 +380,49 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_methods: {
+        Row: {
+          created_at: string
+          details: Json
+          id: string
+          is_default: boolean
+          is_verified: boolean
+          label: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          details?: Json
+          id?: string
+          is_default?: boolean
+          is_verified?: boolean
+          label: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          details?: Json
+          id?: string
+          is_default?: boolean
+          is_verified?: boolean
+          label?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           aadhaar_number: string | null
-          avatar_url: string | null
+          balance: number
+          bonus_balance: number
           created_at: string
           date_of_birth: string | null
           display_name: string | null
           id: string
+          kyc_level: number
           kyc_reject_reason: string | null
           kyc_reviewed_at: string | null
           kyc_status: string
@@ -172,11 +435,13 @@ export type Database = {
         }
         Insert: {
           aadhaar_number?: string | null
-          avatar_url?: string | null
+          balance?: number
+          bonus_balance?: number
           created_at?: string
           date_of_birth?: string | null
           display_name?: string | null
           id?: string
+          kyc_level?: number
           kyc_reject_reason?: string | null
           kyc_reviewed_at?: string | null
           kyc_status?: string
@@ -189,11 +454,13 @@ export type Database = {
         }
         Update: {
           aadhaar_number?: string | null
-          avatar_url?: string | null
+          balance?: number
+          bonus_balance?: number
           created_at?: string
           date_of_birth?: string | null
           display_name?: string | null
           id?: string
+          kyc_level?: number
           kyc_reject_reason?: string | null
           kyc_reviewed_at?: string | null
           kyc_status?: string
@@ -211,9 +478,11 @@ export type Database = {
           amount: number
           balance_after: number | null
           created_at: string
+          currency: string
           description: string | null
           id: string
-          reference_id: string | null
+          idempotency_key: string | null
+          metadata: Json | null
           status: string
           type: string
           user_id: string
@@ -222,9 +491,11 @@ export type Database = {
           amount: number
           balance_after?: number | null
           created_at?: string
+          currency?: string
           description?: string | null
           id?: string
-          reference_id?: string | null
+          idempotency_key?: string | null
+          metadata?: Json | null
           status?: string
           type: string
           user_id: string
@@ -233,30 +504,190 @@ export type Database = {
           amount?: number
           balance_after?: number | null
           created_at?: string
+          currency?: string
           description?: string | null
           id?: string
-          reference_id?: string | null
+          idempotency_key?: string | null
+          metadata?: Json | null
           status?: string
           type?: string
           user_id?: string
         }
         Relationships: []
       }
-      user_roles: {
+      user_behavior_events: {
         Row: {
           created_at: string
+          duration_ms: number | null
+          event_data: Json | null
+          event_type: string
+          id: string
+          page_path: string | null
+          session_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          duration_ms?: number | null
+          event_data?: Json | null
+          event_type: string
+          id?: string
+          page_path?: string | null
+          session_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          duration_ms?: number | null
+          event_data?: Json | null
+          event_type?: string
+          id?: string
+          page_path?: string | null
+          session_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_device_sessions: {
+        Row: {
+          created_at: string
+          device_fingerprint: string
+          id: string
+          last_seen_at: string
+          screen_resolution: string | null
+          timezone: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          device_fingerprint: string
+          id?: string
+          last_seen_at?: string
+          screen_resolution?: string | null
+          timezone?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          device_fingerprint?: string
+          id?: string
+          last_seen_at?: string
+          screen_resolution?: string | null
+          timezone?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_referrals: {
+        Row: {
+          affiliate_id: string | null
+          created_at: string
+          id: string
+          landing_url: string | null
+          referral_code: string | null
+          referred_by: string | null
+          source: string | null
+          user_id: string
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
+        }
+        Insert: {
+          affiliate_id?: string | null
+          created_at?: string
+          id?: string
+          landing_url?: string | null
+          referral_code?: string | null
+          referred_by?: string | null
+          source?: string | null
+          user_id: string
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Update: {
+          affiliate_id?: string | null
+          created_at?: string
+          id?: string
+          landing_url?: string | null
+          referral_code?: string | null
+          referred_by?: string | null
+          source?: string | null
+          user_id?: string
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_referrals_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            isOneToOne: false
+            referencedRelation: "affiliates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_risk_profiles: {
+        Row: {
+          account_status: string
+          blocked_markets: string[]
+          bonuses_disabled: boolean
+          created_at: string
+          flags: string[]
+          id: string
+          last_calculated_at: string | null
+          max_bet_override: number | null
+          risk_level: string
+          risk_score: number
+          user_id: string
+          withdrawal_delay_hours: number
+        }
+        Insert: {
+          account_status?: string
+          blocked_markets?: string[]
+          bonuses_disabled?: boolean
+          created_at?: string
+          flags?: string[]
+          id?: string
+          last_calculated_at?: string | null
+          max_bet_override?: number | null
+          risk_level?: string
+          risk_score?: number
+          user_id: string
+          withdrawal_delay_hours?: number
+        }
+        Update: {
+          account_status?: string
+          blocked_markets?: string[]
+          bonuses_disabled?: boolean
+          created_at?: string
+          flags?: string[]
+          id?: string
+          last_calculated_at?: string | null
+          max_bet_override?: number | null
+          risk_level?: string
+          risk_score?: number
+          user_id?: string
+          withdrawal_delay_hours?: number
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
           id: string
           role: Database["public"]["Enums"]["app_role"]
           user_id: string
         }
         Insert: {
-          created_at?: string
           id?: string
           role: Database["public"]["Enums"]["app_role"]
           user_id: string
         }
         Update: {
-          created_at?: string
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
@@ -265,23 +696,20 @@ export type Database = {
       }
       wallet_balances: {
         Row: {
-          balance: number
-          bonus_balance: number
           id: string
+          locked_balance: number
           updated_at: string
           user_id: string
         }
         Insert: {
-          balance?: number
-          bonus_balance?: number
           id?: string
+          locked_balance?: number
           updated_at?: string
           user_id: string
         }
         Update: {
-          balance?: number
-          bonus_balance?: number
           id?: string
+          locked_balance?: number
           updated_at?: string
           user_id?: string
         }
@@ -292,6 +720,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      detect_multi_accounts: { Args: never; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -311,9 +740,46 @@ export type Database = {
         }
         Returns: Json
       }
+      wallet_credit: {
+        Args: {
+          p_amount: number
+          p_description: string
+          p_idempotency_key: string
+          p_type: string
+          p_user_id: string
+        }
+        Returns: Json
+      }
+      wallet_debit: {
+        Args: {
+          p_amount: number
+          p_description: string
+          p_idempotency_key: string
+          p_type: string
+          p_user_id: string
+        }
+        Returns: Json
+      }
+      wallet_get_balance: { Args: { p_user_id: string }; Returns: Json }
+      wallet_withdraw_with_checks: {
+        Args: {
+          p_amount: number
+          p_description: string
+          p_idempotency_key: string
+          p_user_id: string
+        }
+        Returns: Json
+      }
     }
     Enums: {
+      account_status_enum:
+        | "active"
+        | "restricted"
+        | "suspended"
+        | "under_review"
+        | "blocked"
       app_role: "admin" | "moderator" | "user"
+      kyc_status_enum: "unverified" | "pending" | "verified" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -441,7 +907,15 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      account_status_enum: [
+        "active",
+        "restricted",
+        "suspended",
+        "under_review",
+        "blocked",
+      ],
       app_role: ["admin", "moderator", "user"],
+      kyc_status_enum: ["unverified", "pending", "verified", "rejected"],
     },
   },
 } as const

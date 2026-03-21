@@ -1,36 +1,36 @@
-export type Sport = "Cricket" | "Football" | "Basketball" | "Tennis" | "Esports";
-export type MatchStatus = "live" | "upcoming" | "completed";
-export type BetStatus = "open" | "won" | "lost" | "void";
+// Cricket-only mock data for LIVEBET platform
 
-export interface Odds {
+export type Sport = "Cricket";
+export const SPORTS: Sport[] = ["Cricket"];
+export const SPORT_ICONS: Record<Sport, string> = { Cricket: "🏏" };
+
+export interface OddOption {
   id: string;
   label: string;
   value: number;
-  trend?: "up" | "down" | null;
+  trend: "up" | "down" | null;
 }
 
 export interface Market {
   id: string;
   name: string;
-  odds: Odds[];
+  odds: OddOption[];
 }
 
 export interface Match {
   id: string;
-  sport: Sport;
   team1: string;
   team2: string;
   team1Short: string;
   team2Short: string;
+  league: string;
+  sport: Sport;
+  status: "live" | "upcoming" | "completed";
   score1?: string;
   score2?: string;
-  detail?: string; // overs, quarter, set
   time: string;
-  status: MatchStatus;
+  detail?: string;
   markets: Market[];
-  league: string;
-  flagCode1?: string;
-  flagCode2?: string;
 }
 
 export interface BetSelection {
@@ -41,378 +41,162 @@ export interface BetSelection {
   odds: number;
 }
 
-export interface Bet {
-  id: string;
-  selection: BetSelection;
-  stake: number;
-  potentialWin: number;
-  status: BetStatus;
-  placedAt: string;
-  settledAt?: string;
-  profit?: number;
+function makeOdds(team1: string, team2: string, drawOdds?: number): OddOption[] {
+  const odds: OddOption[] = [
+    { id: crypto.randomUUID(), label: team1, value: 1.75 + Math.random() * 0.5, trend: null },
+    { id: crypto.randomUUID(), label: team2, value: 1.85 + Math.random() * 0.6, trend: null },
+  ];
+  if (drawOdds) {
+    odds.push({ id: crypto.randomUUID(), label: "Draw", value: drawOdds, trend: null });
+  }
+  return odds;
 }
 
-export interface Transaction {
-  id: string;
-  type: "deposit" | "withdrawal" | "bet_placed" | "bet_win" | "bonus";
-  amount: number;
-  description: string;
-  timestamp: string;
-  status: "completed" | "pending" | "failed";
+function makeMarkets(t1: string, t2: string): Market[] {
+  return [
+    {
+      id: crypto.randomUUID(),
+      name: "Match Winner",
+      odds: makeOdds(t1, t2),
+    },
+    {
+      id: crypto.randomUUID(),
+      name: "Toss Winner",
+      odds: [
+        { id: crypto.randomUUID(), label: t1, value: 1.9 + Math.random() * 0.2, trend: null },
+        { id: crypto.randomUUID(), label: t2, value: 1.9 + Math.random() * 0.2, trend: null },
+      ],
+    },
+    {
+      id: crypto.randomUUID(),
+      name: "Top Batsman",
+      odds: [
+        { id: crypto.randomUUID(), label: "Player A", value: 3.5 + Math.random(), trend: null },
+        { id: crypto.randomUUID(), label: "Player B", value: 4.0 + Math.random(), trend: null },
+        { id: crypto.randomUUID(), label: "Player C", value: 5.0 + Math.random(), trend: null },
+      ],
+    },
+    {
+      id: crypto.randomUUID(),
+      name: "Total Runs O/U",
+      odds: [
+        { id: crypto.randomUUID(), label: "Over 320.5", value: 1.85 + Math.random() * 0.3, trend: null },
+        { id: crypto.randomUUID(), label: "Under 320.5", value: 1.85 + Math.random() * 0.3, trend: null },
+      ],
+    },
+  ];
 }
 
-export interface Notification {
-  id: string;
-  type: "bet_accepted" | "bet_won" | "bet_lost" | "deposit" | "withdrawal";
-  title: string;
-  message: string;
-  timestamp: string;
-  read: boolean;
-}
-
-// ── MATCHES ──────────────────────────────────────────────────
 export const INITIAL_MATCHES: Match[] = [
   {
-    id: "m1",
-    sport: "Cricket",
+    id: "ipl-csk-mi",
     team1: "Chennai Super Kings",
     team2: "Mumbai Indians",
     team1Short: "CSK",
     team2Short: "MI",
-    score1: "156/4",
+    league: "IPL 2025",
+    sport: "Cricket",
+    status: "live",
+    score1: "178/4 (18.2 ov)",
     score2: "—",
-    detail: "16.2 overs",
-    time: "LIVE",
-    status: "live",
-    league: "IPL 2025",
-    markets: [
-      {
-        id: "mkt1",
-        name: "Match Winner",
-        odds: [
-          { id: "o1", label: "CSK", value: 1.80 },
-          { id: "o2", label: "MI", value: 2.05 },
-        ],
-      },
-      {
-        id: "mkt2",
-        name: "Total Runs",
-        odds: [
-          { id: "o3", label: "Over 170.5", value: 1.90 },
-          { id: "o4", label: "Under 170.5", value: 1.85 },
-        ],
-      },
-      {
-        id: "mkt3",
-        name: "Next Wicket",
-        odds: [
-          { id: "o5", label: "This Over", value: 3.20 },
-          { id: "o6", label: "Not This Over", value: 1.38 },
-        ],
-      },
-      {
-        id: "mkt4",
-        name: "Top Batsman",
-        odds: [
-          { id: "o7", label: "M.S. Dhoni", value: 3.50 },
-          { id: "o8", label: "Ruturaj Gaikwad", value: 2.80 },
-          { id: "o9", label: "Other", value: 1.60 },
-        ],
-      },
-      {
-        id: "mkt5",
-        name: "Over 17 Runs",
-        odds: [
-          { id: "o10", label: "Over 8.5", value: 1.95 },
-          { id: "o11", label: "Under 8.5", value: 1.80 },
-        ],
-      },
-    ],
+    time: "7:30 PM",
+    detail: "18.2 ov",
+    markets: makeMarkets("CSK", "MI"),
   },
   {
-    id: "m2",
-    sport: "Cricket",
+    id: "ipl-rcb-dc",
     team1: "Royal Challengers Bangalore",
-    team2: "Kolkata Knight Riders",
-    team1Short: "RCB",
-    team2Short: "KKR",
-    score1: "210/6",
-    score2: "186/8",
-    detail: "Match Ended",
-    time: "COMPLETED",
-    status: "completed",
-    league: "IPL 2025",
-    markets: [
-      {
-        id: "mkt6",
-        name: "Match Winner",
-        odds: [
-          { id: "o12", label: "RCB", value: 1.55 },
-          { id: "o13", label: "KKR", value: 2.50 },
-        ],
-      },
-    ],
-  },
-  {
-    id: "m3",
-    sport: "Cricket",
-    team1: "Rajasthan Royals",
     team2: "Delhi Capitals",
-    team1Short: "RR",
+    team1Short: "RCB",
     team2Short: "DC",
-    time: "Today 19:30 IST",
-    status: "upcoming",
     league: "IPL 2025",
-    markets: [
-      {
-        id: "mkt7",
-        name: "Match Winner",
-        odds: [
-          { id: "o14", label: "RR", value: 1.65 },
-          { id: "o15", label: "DC", value: 2.25 },
-        ],
-      },
-      {
-        id: "mkt8",
-        name: "Total Runs",
-        odds: [
-          { id: "o16", label: "Over 165.5", value: 1.88 },
-          { id: "o17", label: "Under 165.5", value: 1.87 },
-        ],
-      },
-    ],
-  },
-  {
-    id: "m4",
-    sport: "Football",
-    team1: "Manchester City",
-    team2: "Arsenal",
-    team1Short: "MCI",
-    team2Short: "ARS",
-    score1: "2",
-    score2: "1",
-    detail: "67'",
-    time: "LIVE",
+    sport: "Cricket",
     status: "live",
-    league: "Premier League",
-    markets: [
-      {
-        id: "mkt9",
-        name: "Match Result",
-        odds: [
-          { id: "o18", label: "MCI Win", value: 1.45 },
-          { id: "o19", label: "Draw", value: 3.80 },
-          { id: "o20", label: "ARS Win", value: 6.50 },
-        ],
-      },
-      {
-        id: "mkt10",
-        name: "Both Teams to Score",
-        odds: [
-          { id: "o21", label: "Yes", value: 1.60 },
-          { id: "o22", label: "No", value: 2.25 },
-        ],
-      },
-      {
-        id: "mkt11",
-        name: "Next Goal",
-        odds: [
-          { id: "o23", label: "MCI", value: 1.55 },
-          { id: "o24", label: "ARS", value: 2.80 },
-          { id: "o25", label: "No Goal", value: 4.00 },
-        ],
-      },
-    ],
+    score1: "142/3 (15.4 ov)",
+    score2: "—",
+    time: "3:30 PM",
+    detail: "15.4 ov",
+    markets: makeMarkets("RCB", "DC"),
   },
   {
-    id: "m5",
-    sport: "Football",
-    team1: "Real Madrid",
-    team2: "Barcelona",
-    team1Short: "RMA",
-    team2Short: "BAR",
-    time: "Tomorrow 22:00 CET",
+    id: "ipl-kkr-srh",
+    team1: "Kolkata Knight Riders",
+    team2: "Sunrisers Hyderabad",
+    team1Short: "KKR",
+    team2Short: "SRH",
+    league: "IPL 2025",
+    sport: "Cricket",
     status: "upcoming",
-    league: "La Liga",
-    markets: [
-      {
-        id: "mkt12",
-        name: "Match Result",
-        odds: [
-          { id: "o26", label: "RMA Win", value: 2.10 },
-          { id: "o27", label: "Draw", value: 3.40 },
-          { id: "o28", label: "BAR Win", value: 2.90 },
-        ],
-      },
-    ],
+    time: "Tomorrow 7:30 PM",
+    markets: makeMarkets("KKR", "SRH"),
   },
   {
-    id: "m6",
-    sport: "Basketball",
-    team1: "LA Lakers",
-    team2: "Golden State",
-    team1Short: "LAL",
-    team2Short: "GSW",
-    score1: "88",
-    score2: "91",
-    detail: "Q3 5:42",
-    time: "LIVE",
+    id: "ipl-gt-lsg",
+    team1: "Gujarat Titans",
+    team2: "Lucknow Super Giants",
+    team1Short: "GT",
+    team2Short: "LSG",
+    league: "IPL 2025",
+    sport: "Cricket",
+    status: "upcoming",
+    time: "Tomorrow 3:30 PM",
+    markets: makeMarkets("GT", "LSG"),
+  },
+  {
+    id: "ind-aus-odi",
+    team1: "India",
+    team2: "Australia",
+    team1Short: "IND",
+    team2Short: "AUS",
+    league: "ODI SERIES",
+    sport: "Cricket",
     status: "live",
-    league: "NBA",
-    markets: [
-      {
-        id: "mkt13",
-        name: "Match Winner",
-        odds: [
-          { id: "o29", label: "LAL", value: 2.30 },
-          { id: "o30", label: "GSW", value: 1.65 },
-        ],
-      },
-      {
-        id: "mkt14",
-        name: "Total Points",
-        odds: [
-          { id: "o31", label: "Over 225.5", value: 1.88 },
-          { id: "o32", label: "Under 225.5", value: 1.87 },
-        ],
-      },
-    ],
+    score1: "245/5 (42.3 ov)",
+    score2: "289/8 (50 ov)",
+    time: "2:00 PM",
+    detail: "42.3 ov · IND need 45 runs",
+    markets: makeMarkets("IND", "AUS"),
   },
   {
-    id: "m7",
-    sport: "Tennis",
-    team1: "N. Djokovic",
-    team2: "C. Alcaraz",
-    team1Short: "DJO",
-    team2Short: "ALC",
-    score1: "6-4, 3",
-    score2: "6-1, 5",
-    detail: "Set 3",
-    time: "LIVE",
+    id: "eng-sa-test",
+    team1: "England",
+    team2: "South Africa",
+    team1Short: "ENG",
+    team2Short: "SA",
+    league: "TEST SERIES",
+    sport: "Cricket",
     status: "live",
-    league: "Wimbledon",
-    markets: [
-      {
-        id: "mkt15",
-        name: "Match Winner",
-        odds: [
-          { id: "o33", label: "Djokovic", value: 2.80 },
-          { id: "o34", label: "Alcaraz", value: 1.45 },
-        ],
-      },
-    ],
+    score1: "312/7",
+    score2: "198",
+    time: "Day 2",
+    detail: "Day 2 · Session 2",
+    markets: makeMarkets("ENG", "SA"),
   },
   {
-    id: "m8",
-    sport: "Esports",
-    team1: "Team Liquid",
-    team2: "NaVi",
-    team1Short: "TL",
-    team2Short: "NAVI",
-    score1: "1",
-    score2: "0",
-    detail: "Map 2",
-    time: "LIVE",
-    status: "live",
-    league: "CS2 Major",
-    markets: [
-      {
-        id: "mkt16",
-        name: "Match Winner",
-        odds: [
-          { id: "o35", label: "TL", value: 1.70 },
-          { id: "o36", label: "NaVi", value: 2.15 },
-        ],
-      },
-      {
-        id: "mkt17",
-        name: "Total Maps",
-        odds: [
-          { id: "o37", label: "2 Maps", value: 2.20 },
-          { id: "o38", label: "3 Maps", value: 1.68 },
-        ],
-      },
-    ],
-  },
-];
-
-// ── BETS ─────────────────────────────────────────────────────
-export const INITIAL_BETS: Bet[] = [
-  {
-    id: "b1",
-    selection: {
-      matchId: "m2",
-      matchTitle: "RCB vs KKR",
-      marketName: "Match Winner",
-      selectionLabel: "RCB",
-      odds: 1.55,
-    },
-    stake: 500,
-    potentialWin: 775,
-    status: "won",
-    placedAt: "2025-03-10T14:30:00",
-    settledAt: "2025-03-10T18:00:00",
-    profit: 275,
+    id: "ipl-pbks-rr",
+    team1: "Punjab Kings",
+    team2: "Rajasthan Royals",
+    team1Short: "PBKS",
+    team2Short: "RR",
+    league: "IPL 2025",
+    sport: "Cricket",
+    status: "upcoming",
+    time: "Mar 23, 7:30 PM",
+    markets: makeMarkets("PBKS", "RR"),
   },
   {
-    id: "b2",
-    selection: {
-      matchId: "m2",
-      matchTitle: "RCB vs KKR",
-      marketName: "Total Runs",
-      selectionLabel: "Over 190.5",
-      odds: 1.90,
-    },
-    stake: 300,
-    potentialWin: 570,
-    status: "lost",
-    placedAt: "2025-03-10T14:45:00",
-    settledAt: "2025-03-10T18:00:00",
-    profit: -300,
-  },
-  {
-    id: "b3",
-    selection: {
-      matchId: "m1",
-      matchTitle: "CSK vs MI",
-      marketName: "Match Winner",
-      selectionLabel: "CSK",
-      odds: 1.80,
-    },
-    stake: 1000,
-    potentialWin: 1800,
-    status: "open",
-    placedAt: "2025-03-10T19:20:00",
+    id: "nz-pak-t20",
+    team1: "New Zealand",
+    team2: "Pakistan",
+    team1Short: "NZ",
+    team2Short: "PAK",
+    league: "T20I SERIES",
+    sport: "Cricket",
+    status: "completed",
+    score1: "185/6 (20 ov)",
+    score2: "172/9 (20 ov)",
+    time: "Completed",
+    detail: "NZ won by 13 runs",
+    markets: makeMarkets("NZ", "PAK"),
   },
 ];
-
-// ── TRANSACTIONS ─────────────────────────────────────────────
-export const INITIAL_TRANSACTIONS: Transaction[] = [
-  { id: "t1", type: "deposit", amount: 10000, description: "UPI Deposit", timestamp: "2025-03-08T10:00:00", status: "completed" },
-  { id: "t2", type: "bet_placed", amount: -500, description: "Bet: RCB win vs KKR", timestamp: "2025-03-10T14:30:00", status: "completed" },
-  { id: "t3", type: "bet_win", amount: 775, description: "Win: RCB win vs KKR", timestamp: "2025-03-10T18:00:00", status: "completed" },
-  { id: "t4", type: "bet_placed", amount: -300, description: "Bet: Over 190.5 vs KKR", timestamp: "2025-03-10T14:45:00", status: "completed" },
-  { id: "t5", type: "bet_placed", amount: -1000, description: "Bet: CSK win vs MI", timestamp: "2025-03-10T19:20:00", status: "completed" },
-  { id: "t6", type: "bonus", amount: 500, description: "Welcome Bonus", timestamp: "2025-03-08T10:05:00", status: "completed" },
-  { id: "t7", type: "deposit", amount: 5000, description: "Bank Transfer", timestamp: "2025-03-09T15:30:00", status: "completed" },
-  { id: "t8", type: "withdrawal", amount: -3000, description: "Withdrawal to Bank", timestamp: "2025-03-09T16:00:00", status: "pending" },
-];
-
-// ── NOTIFICATIONS ────────────────────────────────────────────
-export const INITIAL_NOTIFICATIONS: Notification[] = [
-  { id: "n1", type: "bet_won", title: "Bet Won! 🎉", message: "Your bet on RCB win paid ₹775", timestamp: "2025-03-10T18:01:00", read: false },
-  { id: "n2", type: "bet_accepted", title: "Bet Accepted", message: "CSK win @ 1.80 — ₹1000 placed", timestamp: "2025-03-10T19:20:00", read: false },
-  { id: "n3", type: "deposit", title: "Deposit Successful", message: "₹5,000 credited to your wallet", timestamp: "2025-03-09T15:31:00", read: true },
-  { id: "n4", type: "bet_lost", title: "Bet Settled", message: "Over 190.5 runs — Bet lost", timestamp: "2025-03-10T18:01:00", read: true },
-  { id: "n5", type: "withdrawal", title: "Withdrawal Initiated", message: "₹3,000 withdrawal is pending", timestamp: "2025-03-09T16:01:00", read: true },
-];
-
-export const SPORTS: Sport[] = ["Cricket", "Football", "Basketball", "Tennis", "Esports"];
-
-export const SPORT_ICONS: Record<Sport, string> = {
-  Cricket: "🏏",
-  Football: "⚽",
-  Basketball: "🏀",
-  Tennis: "🎾",
-  Esports: "🎮",
-};

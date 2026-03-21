@@ -12,7 +12,6 @@ import { useAuth } from "@/context/AuthContext";
 import { useAffiliateTracking } from "@/hooks/useAffiliateTracking";
 import { useLoginAnomalyDetection } from "@/hooks/useLoginAnomalyDetection";
 import { useBehaviorTracking } from "@/hooks/useBehaviorTracking";
-import { Sport } from "@/data/mockData";
 import { Menu, User, Wallet, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -20,8 +19,6 @@ export interface LayoutContext {
   matches: ReturnType<typeof useLiveOdds>["matches"];
   flashMap: ReturnType<typeof useLiveOdds>["flashMap"];
   betSlip: ReturnType<typeof useBetSlip>;
-  activeSport: Sport | "All";
-  setActiveSport: (s: Sport | "All") => void;
   wallet: ReturnType<typeof useWallet>;
   suspensions: ReturnType<typeof useMarketSuspensions>;
 }
@@ -33,41 +30,31 @@ const AppLayout: React.FC = () => {
   const wallet = useWallet();
   const suspensions = useMarketSuspensions();
   const { signOut } = useAuth();
-  const [activeSport, setActiveSport] = useState<Sport | "All">("All");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
 
-  // Background tracking hooks (no UI, fire-and-forget)
+  // Background tracking hooks
   useAffiliateTracking();
   useLoginAnomalyDetection();
   useBehaviorTracking();
 
+  // Count by status for sidebar
   const matchCounts = matches.reduce(
-    (acc, m) => { acc[m.sport] = (acc[m.sport] || 0) + 1; return acc; },
+    (acc, m) => { acc[m.status] = (acc[m.status] || 0) + 1; return acc; },
     {} as Record<string, number>
   );
 
-  const ctx: LayoutContext = {
-    matches,
-    flashMap,
-    betSlip,
-    activeSport,
-    setActiveSport,
-    wallet,
-    suspensions,
-  };
+  const ctx: LayoutContext = { matches, flashMap, betSlip, wallet, suspensions };
 
   const formattedBalance = wallet.loading
     ? "..."
     : `₹${wallet.balance.toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
 
-  // Build a flat list of suspended markets for BetSlip
   const suspendedMarketsList = suspensions.suspensions.map((s) => ({
     matchId: s.match_id,
     marketName: s.market_name,
   }));
 
-  // Odds-change adapter for BetSlip
   const oddsChangedForSlip = betSlip.oddsChangedSel
     ? {
         selectionLabel: betSlip.oddsChangedSel.selectionLabel,
@@ -107,6 +94,7 @@ const AppLayout: React.FC = () => {
             <Menu className="w-5 h-5" />
           </button>
           <span className="font-condensed font-black text-lg text-yellow tracking-widest">LIVE BET</span>
+          <span className="font-mono text-[0.5rem] text-muted-foreground tracking-widest">🏏 CRICKET</span>
         </div>
         <div className="flex items-center gap-1">
           <button onClick={() => navigate("/wallet")} className="p-2 text-muted-foreground hover:text-foreground">
@@ -130,11 +118,7 @@ const AppLayout: React.FC = () => {
           <div className="fixed inset-0 z-30 bg-black/50 lg:hidden" onClick={() => setSidebarOpen(false)} />
         )}
         <div className={`fixed inset-y-0 left-0 z-40 lg:static lg:z-auto transition-transform duration-200 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}>
-          <LeftSidebar
-            activeSport={activeSport}
-            onSelectSport={(s) => { setActiveSport(s); setSidebarOpen(false); }}
-            matchCounts={matchCounts}
-          />
+          <LeftSidebar matchCounts={matchCounts} />
         </div>
 
         {/* Main content */}
@@ -142,7 +126,7 @@ const AppLayout: React.FC = () => {
           {/* Desktop top bar */}
           <div className="hidden lg:flex items-center justify-between px-6 py-3 border-b border-border bg-surface-card sticky top-0 z-10">
             <span className="font-mono text-[0.65rem] text-muted-foreground tracking-widest uppercase">
-              {activeSport === "All" ? "All Sports" : activeSport} · {activeSport === "All" ? matches.length : (matchCounts[activeSport] ?? 0)} matches
+              🏏 Cricket · {matches.length} matches
             </span>
             <div className="flex items-center gap-3">
               <button

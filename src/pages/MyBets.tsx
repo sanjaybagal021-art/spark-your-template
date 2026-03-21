@@ -2,10 +2,9 @@ import React, { useState } from "react";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import { useBetsDB } from "@/hooks/useBetsDB";
-import { Database } from "@/integrations/supabase/types";
 
-type Bet = Database["public"]["Tables"]["bets"]["Row"];
 type BetStatus = "open" | "won" | "lost" | "void" | "cashout";
+type Bet = { id: string; match_id: string; match_title: string; market_name: string; selection_label: string; odds: number; stake: number; potential_win: number; status: string; profit_loss: number | null; placed_at: string; settled_at: string | null };
 
 const TABS: { key: "open" | "settled" | "lost"; label: string; filter: BetStatus[] }[] = [
   { key: "open",     label: "Open Bets",     filter: ["open"] },
